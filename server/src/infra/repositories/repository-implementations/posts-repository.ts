@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { PostDto } from "../../../application/dtos/post-dto"
+import { PostApplicationDto, PostDatabaseDto, PostInputDto } from "../../../application/dtos/post-dtos/post-dtos"
 import { IPostsRepository } from "../repository-contracts/iposts-repository";
 import { ApiError } from "../../../domain/errors/api-error";
+
 
 export class PostsRepository implements IPostsRepository
 {
@@ -9,32 +10,86 @@ export class PostsRepository implements IPostsRepository
         private connection: PrismaClient
     ){}
     
-    async find (postsParams: any): Promise<PostDto[]>
-    {        
-        const posts = await this.connection.post.findMany();
+    async find (postsParams: any): Promise<PostApplicationDto[]>
+    {   
+        const postInput = new PostInputDto ({
+            owner_id: postsParams.ownerId,
+            title: postsParams.title,
+            content: postsParams.content,
+            id: postsParams.id,
+            date: postsParams.date
+        });
+
+        console.log(postInput.getValues());
+        
+        const posts = await this.connection.post.findMany({
+            where: postInput.getValues()
+        });
 
         if (!posts.length)
-        {
+        {            
             throw new ApiError(404, "Posts not be found!");
         }
+
+        const postsAdapted = posts.map(post => (
+            new PostApplicationDto ({
+                ownerId: post.owner_id,
+                title: post.title,
+                content: post.content,
+                id: post.id,
+                date: post.date
+            })
+        ));
         
-        return posts;
+        return postsAdapted;
     }
 
-    async findById (id: number): Promise<PostDto>
+    
+    async findById (id: number): Promise<PostApplicationDto>
     {
         const singlePost = await this.connection.post.findUnique({
-            where: {
-                id: id
-            }
+            where: { id }
         });
 
         if (!singlePost)
         {
             throw new ApiError(404, "Post not be found!");
-        }        
+        }
+        
+        const postAdapted = new PostApplicationDto ({
+            ownerId: singlePost.owner_id,
+            title: singlePost.title,
+            content: singlePost.content,
+            id: singlePost.id,
+            date: singlePost.date
+        });
     
-        return singlePost;
+        return postAdapted;
+    }
+
+
+    async savePost (newPost: PostApplicationDto): Promise<void>
+    {        
+        const ownerExists = await this.connection.user.findFirst({
+            where: { id: newPost.ownerId }
+        });
+        
+        if (!ownerExists)
+        {
+            throw new ApiError(404, "Post owner not exists!");
+        }
+
+        const postAdapted = new PostDatabaseDto ({
+            owner_id: newPost.ownerId,
+            title: newPost.title,
+            content: newPost.content,
+            id: newPost.id,
+            date: newPost.date              
+        });
+
+        await this.connection.post.create({
+            data: postAdapted.getValues()
+        })
     }
 
 }

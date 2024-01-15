@@ -15,7 +15,7 @@ export class ExpressAdapter implements IHTTPServer
         this.server[httpMethod](uri, async(req: Request, res: Response, next: NextFunction) => {
             try
             {
-                const output = await controller(req.body, req.params);
+                const output = await controller(req.body as any, req.params as any);
                 return res.status(output.statusCode).json(output.data);     
             }
             catch (error: any)
