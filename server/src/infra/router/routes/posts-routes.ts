@@ -4,7 +4,7 @@ import { DeletePost } from "../../../application/use-cases/posts-use-cases/delet
 import { GetPostsById } from "../../../application/use-cases/posts-use-cases/get-post-by-id/get-post-by-id";
 import { GetPosts } from "../../../application/use-cases/posts-use-cases/get-posts/get-posts";
 import { UpdatePost } from "../../../application/use-cases/posts-use-cases/update-post/update-post";
-import { ApiError } from "../../../domain/errors/api-error";
+
 import { IPostsRepository } from "../../repositories/repository-contracts/iposts-repository";
 import { IHTTPServer } from "../../server-http/server-http-contract";
 

@@ -6,8 +6,8 @@
   "scripts": {
     "start:dev": "dotenv -e .env.development -- tsx watch ./server/src/main.ts",
     "test:vitest": "dotenv -e .env.development -- vitest",
-    "migrate:postgres": "dotenv -e .env.development -- npx prisma migrate deploy"
-    
+    "migrate:postgres": "dotenv -e .env.development -- npx prisma migrate deploy",
+    "push:postgres": "dotenv -e .env.development -- npx prisma db push"
   },
   "keywords": [],
   "author": "",

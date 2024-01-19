@@ -1,4 +1,4 @@
-import { ApiError } from "../domain/errors/api-error";
+import { ApiError } from "../../../domain/errors/api-error";
 
 
 type SchemaTypes = "string" | "email" | "number" | "uuid" | "date";

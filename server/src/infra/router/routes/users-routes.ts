@@ -44,7 +44,7 @@ export default class UserRoutes
                 statusCode: 200,
                 data: user
             }
-        }, VerifyJwt.middleware);
+        }, VerifyJwt.middleware());
 
 
         this.httpServer.on("get", "/users/email/:email", async (body: any, params: any) => {

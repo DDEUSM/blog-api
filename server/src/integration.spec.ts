@@ -9,6 +9,7 @@ const url = "http://localhost:4550";
 
 describe("Happy Routes test", () => 
 {
+    let accessToken;
     const user = new UserDto ({
         firstName: generateString(10),
         lastName: generateString(20),
@@ -24,7 +25,6 @@ describe("Happy Routes test", () =>
         id: generateRandomNumber()            
     }); 
     
-
     test("create a new user", async () => 
     {
         const response: any = await axios.post(
@@ -35,7 +35,20 @@ describe("Happy Routes test", () =>
         expect(response.status).toBe(201);
     });
 
-    test("get the user wich has been created before", async () => 
+    test ("User authentication", async () => 
+    {
+        const response = await axios.post(
+            url+"/login",
+            { email: user.email, password: user.passwordHash },
+        ).catch(error => { console.log(error.response.data); return error });
+        
+        expect(response.data.accessToken).toBeTruthy();
+        expect(response.data.refreshToken).toBeTruthy();
+
+        accessToken = response.data.accessToken;
+    });
+
+    test ("get the user wich has been created before", async () => 
     {
         const response: any = await axios.post(
             url+"/users", 
@@ -43,8 +56,13 @@ describe("Happy Routes test", () =>
         ).catch(error => console.log(error.response.data));
 
         const response2: any = await axios.get(
-            url+"/users/id/"+user.id
-        ).catch(error => console.log(error.response.data));
+            url+"/users/id/"+user.id,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            }
+        ).catch(error => console.log(error.response.data.message));
 
         const response3: any = await axios.get(
             url+"/users/email/"+user.email
@@ -78,17 +96,6 @@ describe("Happy Routes test", () =>
         
         expect(match3).toBe(true);
                
-    });
-
-    test ("User authentication", async () => 
-    {
-        const response = await axios.post(
-            url+"/login",
-            { email: user.email, password: user.passwordHash }
-        ).catch(error => { console.log(error.response.data); return error });
-        
-        expect(response.data.accessToken).toBeTruthy();
-        expect(response.data.refreshToken).toBeTruthy();
     });
 
     test("create a new post", async () => 
@@ -127,13 +134,16 @@ describe("Happy Routes test", () =>
         ).catch(error => console.log(error.response.data));
 
         const error: any = await axios.get(
-            url+"/posts/"+newPost.id
+            url+"/posts/"+newPost.id,
         ).catch(error => {console.log(error.response.data); return error});
 
         expect(error.response.status).toBe(404);        
 
         const error2: any = await axios.get(
-            url+"/users/id/"+user.id
+            url+"/users/id/"+user.id,
+            { headers: {
+                Authorization: `Bearer ${accessToken}`
+            }}
         ).catch(error => {console.log(error.response.data); return error});
 
         expect(error2.response.status).toBe(404);        

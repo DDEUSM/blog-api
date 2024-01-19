@@ -36,7 +36,7 @@ export class UsersRepository implements IUsersRepository
         const newToken = jwt.sign (
             { email: foundUser.email },
             env.ACCESS_TOKEN_SECRET,
-            { expiresIn: "60" }
+            { expiresIn: "1d" }
         );
         const refreshToken = jwt.sign (
             { email: foundUser.email },
