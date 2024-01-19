@@ -1,9 +1,12 @@
-import { UserApplicationDto } from "../../../application/dtos/user-dtos/user-dtos";
+import { UserDto } from "../../../application/dtos/user-dtos/user-dtos";
 
 export interface IUsersRepository
-{
-    saveUser (newUser: UserApplicationDto): Promise<void>;
-    find (userParams: any): Promise<UserApplicationDto[]>;
-    findUserById (id: number): Promise<UserApplicationDto>;
-    findUserByEmail (email: string): Promise<UserApplicationDto>;
+{   
+    userLogin (userCredentials: any): Promise<any>; 
+    find (userParams: any): Promise<UserDto[]>;
+    findUserById (id: number): Promise<UserDto>;
+    findUserByEmail (email: string): Promise<UserDto>;
+    deleteUser (id: number): Promise<void>;
+    updateUser (id: number, newUserData: any): Promise<void>;
+    saveUser (newUser: UserDto): Promise<void>;
 }

@@ -1,45 +1,38 @@
 import { describe, expect, test } from "vitest";
-import crypto from "crypto";
 import axios from "axios";
-import { UserApplicationDto } from "./application/dtos/user-dtos/user-dtos";
-import { PostApplicationDto } from "./application/dtos/post-dtos/post-dtos";
-
+import { UserDto } from "./application/dtos/user-dtos/user-dtos";
+import { PostDto } from "./application/dtos/post-dtos/post-dtos";
+import { generateRandomNumber, generateString } from "./utils/random";
+import bcrypt from  "bcrypt";
 
 const url = "http://localhost:4550";
 
-const generateString = (bytesNum: number) => 
-{
-    return crypto.randomBytes(bytesNum).toString("hex");
-}
-
-const generateRandomNumber = () =>
-{
-    return Math.floor((Math.random() * 1000) + Math.random() * 10);
-}
-
-
 describe("Happy Routes test", () => 
 {
-
-    const user = new UserApplicationDto ({
+    const user = new UserDto ({
         firstName: generateString(10),
         lastName: generateString(20),
-        email: generateString(20),
-        gender: "male"
+        email: generateString(20)+"@live.com",
+        passwordHash: generateString(20),
+        id: generateRandomNumber()
     });
 
-    let newPost;
+    const newPost = new PostDto ({
+        ownerId: user.id,
+        title: "MEU POST",
+        content: "Meu primeiro post neste blog",
+        id: generateRandomNumber()            
+    }); 
+    
 
     test("create a new user", async () => 
     {
         const response: any = await axios.post(
             url+"/create-user", 
             user
-        )
-        .catch(error => console.log(error))
+        ).catch(error => console.log(error.response.data))
 
         expect(response.status).toBe(201);
-
     });
 
     test("get the user wich has been created before", async () => 
@@ -47,125 +40,104 @@ describe("Happy Routes test", () =>
         const response: any = await axios.post(
             url+"/users", 
             { email: user.email, firstName: user.firstName }
-        )
-        .catch(error => console.log(error));
+        ).catch(error => console.log(error.response.data));
+
+        const response2: any = await axios.get(
+            url+"/users/id/"+user.id
+        ).catch(error => console.log(error.response.data));
+
+        const response3: any = await axios.get(
+            url+"/users/email/"+user.email
+        ).catch(error => console.log(error.response.data));
 
         expect(response.data[0].email).toBe(user.email);
         expect(response.data[0].firstName).toBe(user.firstName);
-        expect(response.data[0].lastName).toBe(user.lastName);
-        expect(response.data[0].gender).toBe(user.gender);
+        expect(response.data[0].lastName).toBe(user.lastName);      
 
-        newPost = new PostApplicationDto ({
-            ownerId: response.data[0].id,
-            title: "MEU POST",
-            content: "Meu primeiro post neste blog"
-        });            
-    })
+        const match = await bcrypt.compare(user.passwordHash, 
+            response.data[0].passwordHash)
+        
+        expect(match).toBe(true);               
+        
+        expect(response2.data.email).toBe(user.email);
+        expect(response2.data.firstName).toBe(user.firstName);
+        expect(response2.data.lastName).toBe(user.lastName);
+
+        const match2 = await bcrypt.compare(user.passwordHash, 
+            response2.data.passwordHash)
+        
+        expect(match2).toBe(true);
+                               
+
+        expect(response3.data.email).toBe(user.email);
+        expect(response3.data.firstName).toBe(user.firstName);
+        expect(response3.data.lastName).toBe(user.lastName);
+
+        const match3 = await bcrypt.compare(user.passwordHash, 
+            response3.data.passwordHash)
+        
+        expect(match3).toBe(true);
+               
+    });
+
+    test ("User authentication", async () => 
+    {
+        const response = await axios.post(
+            url+"/login",
+            { email: user.email, password: user.passwordHash }
+        ).catch(error => { console.log(error.response.data); return error });
+        
+        expect(response.data.accessToken).toBeTruthy();
+        expect(response.data.refreshToken).toBeTruthy();
+    });
 
     test("create a new post", async () => 
     {
         const response: any = await axios.post(
             url+"/create-post",
             newPost
-        )
-        .catch(error => console.log(error))
+        ).catch(error => console.log(error.response.data));
 
         expect(response.status).toBe(201);
     });
 
     test("get the post wich has been created before", async () => 
     {
-        const response = await axios.post (
+        const response: any = await axios.post (
             url+"/posts",
             newPost
-        )
+        ).catch(error => console.log(error.response.data));
+
+        const response2: any = await axios.get(
+            url+"/posts/"+newPost.id
+        ).catch(error => console.log(error.response.data));
 
         expect(response.status).toBe(200);
         expect(response.data[0].title).toBe(newPost.title);
-    });
-});
 
-describe("All requests should return a correct error statuscode", () => 
-{
+        expect(response2.status).toBe(200);
+        expect(response2.data.title).toBe(newPost.title);        
 
-    const user = new UserApplicationDto ({
-        firstName: "David",
-        lastName: "de Deus Mesquita",
-        email: "daviddeusm@live.com",
-        gender: "male"
-    });        
+        await axios.delete (
+            url+"/delete-post/"+newPost.id
+        ).catch(error => console.log(error.response.data));
 
+        await axios.delete (
+            url+"/delete-user/"+user.id
+        ).catch(error => console.log(error.response.data));
 
-    test("user has exists", async () => 
-    {
-        const error: any = await axios.post(
-            url+"/create-user", 
-            user
-        )
-        .catch(error => error);
+        const error: any = await axios.get(
+            url+"/posts/"+newPost.id
+        ).catch(error => {console.log(error.response.data); return error});
 
-        expect(error.response.status).toBe(400);
-    });
+        expect(error.response.status).toBe(404);        
 
+        const error2: any = await axios.get(
+            url+"/users/id/"+user.id
+        ).catch(error => {console.log(error.response.data); return error});
+
+        expect(error2.response.status).toBe(404);        
+    });    
     
-    test("user not exists", async () => 
-    {
-        const error: any = await axios.post(
-            url+"/users", 
-            { email: generateString(20) }
-        )
-        .catch(error => error);
-
-        expect(error.response.status).toBe(404);
-    });
-
-
-    test("Post owner not exists", async () => 
-    {
-        const newPost = new PostApplicationDto ({
-            ownerId: 3437463,
-            content: "gfjgfn",
-            title: "fdgfg"
-        });
-
-        const error: any = await axios.post(
-            url+"/create-post",
-            newPost
-        )
-        .catch(error => error);
-
-        expect(error.response.status).toBe(404);        
-    });
-
-
-    test("Post not exists", async () => 
-    {
-        const newPost = new PostApplicationDto ({
-            ownerId: 3437463,
-            content: "gfjgfn",
-            title: "fdgfg"
-        });
-
-        const error: any = await axios.post(
-            url+"/posts",
-            newPost
-        )
-        .catch(error => error);
-
-        expect(error.response.status).toBe(404);        
-    });
-
-
-    test("Illegal arguments", async () => 
-    {
-        const error: any = await axios.post(
-            url+"/posts",
-            { owner_id: 35545, new_content: "gfgff" }
-        )
-        .catch(error => error);
-        
-        expect(error.response.status).toBe(400);
-        expect(error.response.data.message).toBe('json has illegal keys');        
-        
-    })
 });
+

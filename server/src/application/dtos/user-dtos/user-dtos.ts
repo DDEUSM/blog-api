@@ -1,13 +1,14 @@
 import InputsCleaner from "../../../utils/cleanInputs";
 
-export class UserApplicationDto
+export class UserDto
 {
     readonly firstName: string;
     readonly lastName: string;
-    readonly email: string;
-    readonly gender: string;    
+    readonly email: string;    
+    readonly passwordHash: string;
+    readonly refreshToken?: string;
     readonly id?: number;
-
+    
     constructor ( props: TUserApplicationProps )
     {
         Object.assign(this, props);
@@ -15,54 +16,16 @@ export class UserApplicationDto
 }
 
 
-export class UserInputDto 
+export class DynamicUserDto 
 {
-    first_name?: string;
-    last_name?: string;
-    email?: string;       
-    gender?: string;
-    id?: number; 
+    readonly firstName?: string;
+    readonly lastName?: string;
+    readonly email?: string;             
+    readonly id?: number; 
 
     constructor ( props: TUserInputProps )
     {
         Object.assign(this, props);    
-    }
-
-    getValues (): any
-    {
-        return InputsCleaner.clearInput({
-            first_name: this.first_name,
-            last_name: this.last_name,
-            email: this.email,       
-            gender: this.gender,
-            id: this.id 
-        });
-    }
-}
-
-
-export class UserDatabaseDto
-{
-    readonly first_name: string;
-    readonly last_name: string;
-    readonly email: string;
-    readonly gender: string;    
-    readonly id?: number;
-
-    constructor ( props: TUserDatabaseProps )
-    {
-        Object.assign(this, props);
-    }
-    
-    getValues (): any
-    {
-        return InputsCleaner.clearInput({
-            first_name: this.first_name,
-            last_name: this.last_name,
-            email: this.email,       
-            gender: this.gender,
-            id: this.id 
-        });
     }
 }
 

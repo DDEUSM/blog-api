@@ -11,15 +11,22 @@ export class Router
 
     initAllRoutes(): void
     {
-
         const dirPath = path.dirname(fileURLToPath(import.meta.url));                
         const dirFiles = readdirSync(path.normalize(`${dirPath}/routes`))
         
-        dirFiles.map(async fileName => {
-            const routes = new (await import (`./routes/${fileName}`))
-            .default(this.httpServer, this.repositories);
+        dirFiles.map(async (fileName, index) => 
+        {
+            if(fileName !== "types.ts")
+            {
+                const routes = new (await import (`./routes/${fileName}`))
+                .default(this.httpServer, this.repositories);
 
-            routes.initRoutes();                        
-        });
+                routes.initRoutes();                        
+            }
+            if(index == dirFiles.length - 1)
+            {
+                this.httpServer.useNotFound();                   
+            }            
+        });        
     }
 }

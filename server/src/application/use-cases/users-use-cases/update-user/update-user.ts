@@ -1,14 +1,13 @@
 import { IUsersRepository } from "../../../../infra/repositories/repository-contracts/iusers-repository";
-import { UserDto } from "../../../dtos/user-dtos/user-dtos";
 
-export class CreateUser
+export class UpdateUser
 {
     constructor (
         private usersRepository: IUsersRepository
     ){}
 
-    async execute (newUser: UserDto): Promise<void>
+    async execute (id: number, newUserData: any): Promise<void>
     {
-        await this.usersRepository.saveUser(newUser);
+        await this.usersRepository.updateUser(id, newUserData);
     }
 }

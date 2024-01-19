@@ -1,8 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { IUsersRepository } from "../repository-contracts/iusers-repository";
-import { UserApplicationDto, UserDatabaseDto, UserInputDto } from "../../../application/dtos/user-dtos/user-dtos";
+import { UserDto, DynamicUserDto } from "../../../application/dtos/user-dtos/user-dtos";
 import { ApiError } from "../../../domain/errors/api-error";
-
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { PostgresUserAdapter } from "../../interface-adapters/postgres/postgres-adapters";
+import env from "../../../env";
 
 export class UsersRepository implements IUsersRepository
 {
@@ -10,66 +13,66 @@ export class UsersRepository implements IUsersRepository
         private connection: PrismaClient
     ){}
 
-    async saveUser (newUser: UserApplicationDto): Promise<void>
+    async userLogin (
+        userCredentials: { email: string, password: string }
+    ): Promise<any>
     {
-        const userHasExists = await this.connection.user.findFirst({
-            where: { email: newUser.email }
+        const { email, password } = userCredentials;        
+
+        const foundUser = await this.connection.user.findUnique({
+            where: { email }
         });
 
-        if (userHasExists)
+        if (!foundUser)
         {
-            throw new ApiError(400, "User has exists!");
+            throw new ApiError(401, "Incorret Credentials");
         }
+        const passwordMatch = await bcrypt.compare(password, foundUser.password_hash);
 
-        const userAdapted = new UserDatabaseDto ({
-            first_name: newUser.firstName,
-            last_name: newUser.lastName,
-            email: newUser.email,
-            gender: newUser.gender,
-            id: newUser.id            
+        if (!passwordMatch)
+        {
+            throw new ApiError(401, "Incorrect Credentials")
+        } 
+        const newToken = jwt.sign (
+            { email: foundUser.email },
+            env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "60" }
+        );
+        const refreshToken = jwt.sign (
+            { email: foundUser.email },
+            env.REFRESH_TOKEN_SECRET,
+            { expiresIn: `1d` }
+        );
+        await this.connection.user.update({
+            where: { id: foundUser.id },
+            data: { refresh_token: refreshToken }
         });
-
-        await this.connection.user.create({
-            data: userAdapted.getValues()
-        });
+        return { 
+            accessToken: newToken,
+            refreshToken
+        }
     }
 
 
-    async find (userParams: any): Promise<UserApplicationDto[]> 
+    async find (userParams: any): Promise<UserDto[]> 
     {
-        const userInput = new UserInputDto ({
-            first_name: userParams.firstName,
-            last_name: userParams.lastName,
-            email: userParams.email,
-            gender: userParams.gender,
-            id: userParams.id
-        });
+        const userParamsAdapted = PostgresUserAdapter.toDatabase(userParams);
         
         const users = await this.connection.user.findMany({
-            where: userInput.getValues()
+            where: userParamsAdapted
         });
 
         if (!users.length)
         {
             throw new ApiError(404, "Users not found!");
         }
-
-        const usersAdapted = users.map(user => 
-        {
-            return new UserApplicationDto ({
-                firstName: user.first_name,
-                lastName: user.last_name,
-                email: user.email,
-                gender: user.gender,
-                id: user.id            
-            });            
+        return users.map(user => {
+            return PostgresUserAdapter.toApplication(user);
         });
-
-        return usersAdapted;
     }
 
 
-    async findUserById(id: number): Promise<UserApplicationDto> 
+    async findUserById(id: number): Promise<UserDto> 
     {
         const user = await this.connection.user.findFirst({
             where: { id }
@@ -79,20 +82,11 @@ export class UsersRepository implements IUsersRepository
         {
             throw new ApiError(404, "User not found!");
         }
-
-        const userAdapted = new UserApplicationDto ({
-            firstName: user.first_name,
-            lastName: user.last_name,
-            email: user.email,
-            gender: user.gender,
-            id: user.id         
-        });
-
-        return userAdapted;
+        return PostgresUserAdapter.toApplication(user);
     }
 
     
-    async findUserByEmail (email: string): Promise<UserApplicationDto>
+    async findUserByEmail (email: string): Promise<UserDto>
     {
         const user = await this.connection.user.findUnique({
             where: { email }
@@ -101,16 +95,48 @@ export class UsersRepository implements IUsersRepository
         if (!user)
         {
             throw new ApiError(404, "User not found!");
-        }
+        }        
+        return PostgresUserAdapter.toApplication(user);;
+    }
 
-        const userMapped = new UserApplicationDto ({
-            firstName: user.first_name,
-            lastName: user.last_name,
-            email: user.email,
-            gender: user.gender,
-            id: user.id
+
+    async saveUser (newUserParams: UserDto): Promise<void>
+    {
+        const userHasExists = await this.connection.user.findFirst({
+            where: { email: newUserParams.email }
         });
 
-        return userMapped;
+        if (userHasExists)
+        {
+            throw new ApiError(422, "User has exists!");
+        }        
+        const salt = await bcrypt.genSalt(12);
+        const hash = await bcrypt.hash(newUserParams.passwordHash, salt);
+        const newUser = { ...newUserParams, passwordHash: hash };
+
+        const userAdapted = PostgresUserAdapter.toDatabase(newUser);
+
+        await this.connection.user.create({
+            data: userAdapted
+        });
+    }
+
+
+    async updateUser(id: number, newUserData: any): Promise<void> 
+    {
+        const userInputsAdapted = PostgresUserAdapter.toDatabase(newUserData);
+        
+        await this.connection.user.update({
+            where: { id },
+            data: userInputsAdapted
+        });
+    }
+
+
+    async deleteUser(id: number): Promise<void> 
+    {
+        await this.connection.user.delete({
+            where: { id }
+        });
     }
 }

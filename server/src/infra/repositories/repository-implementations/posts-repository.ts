@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { PostApplicationDto, PostDatabaseDto, PostInputDto } from "../../../application/dtos/post-dtos/post-dtos"
+import { DynamicPostDto, PostDto } from "../../../application/dtos/post-dtos/post-dtos"
 import { IPostsRepository } from "../repository-contracts/iposts-repository";
 import { ApiError } from "../../../domain/errors/api-error";
+import { PostgresPostsAdapter } from "../../interface-adapters/postgres/postgres-adapters";
 
 
 export class PostsRepository implements IPostsRepository
@@ -10,42 +11,26 @@ export class PostsRepository implements IPostsRepository
         private connection: PrismaClient
     ){}
     
-    async find (postsParams: any): Promise<PostApplicationDto[]>
+    async find (postsParams: DynamicPostDto): Promise<PostDto[]>
     {   
-        const postInput = new PostInputDto ({
-            owner_id: postsParams.ownerId,
-            title: postsParams.title,
-            content: postsParams.content,
-            id: postsParams.id,
-            date: postsParams.date
-        });
+        const postInput = PostgresPostsAdapter.toDatabase(postsParams);
 
-        console.log(postInput.getValues());
-        
         const posts = await this.connection.post.findMany({
-            where: postInput.getValues()
-        });
+            where: postInput
+        });        
 
         if (!posts.length)
         {            
             throw new ApiError(404, "Posts not be found!");
         }
 
-        const postsAdapted = posts.map(post => (
-            new PostApplicationDto ({
-                ownerId: post.owner_id,
-                title: post.title,
-                content: post.content,
-                id: post.id,
-                date: post.date
-            })
-        ));
-        
-        return postsAdapted;
+        return posts.map(post => {
+            return PostgresPostsAdapter.toApplication(post)
+        });
     }
 
     
-    async findById (id: number): Promise<PostApplicationDto>
+    async findById (id: number): Promise<PostDto>
     {
         const singlePost = await this.connection.post.findUnique({
             where: { id }
@@ -54,42 +39,47 @@ export class PostsRepository implements IPostsRepository
         if (!singlePost)
         {
             throw new ApiError(404, "Post not be found!");
-        }
-        
-        const postAdapted = new PostApplicationDto ({
-            ownerId: singlePost.owner_id,
-            title: singlePost.title,
-            content: singlePost.content,
-            id: singlePost.id,
-            date: singlePost.date
-        });
+        }            
     
-        return postAdapted;
+        return PostgresPostsAdapter.toApplication(singlePost);;
     }
 
 
-    async savePost (newPost: PostApplicationDto): Promise<void>
+    async savePost (newPost: PostDto): Promise<void>
     {        
-        const ownerExists = await this.connection.user.findFirst({
+        const foundOwner = await this.connection.user.findFirst({
             where: { id: newPost.ownerId }
         });
         
-        if (!ownerExists)
+        if (!foundOwner)
         {
             throw new ApiError(404, "Post owner not exists!");
         }
 
-        const postAdapted = new PostDatabaseDto ({
-            owner_id: newPost.ownerId,
-            title: newPost.title,
-            content: newPost.content,
-            id: newPost.id,
-            date: newPost.date              
-        });
+        const postAdapted = PostgresPostsAdapter.toDatabase(newPost);
 
         await this.connection.post.create({
-            data: postAdapted.getValues()
+            data: postAdapted
         })
+    }
+
+
+    async updatePost(id: number, newPostData: DynamicPostDto): Promise<void> 
+    {
+        const postInput = PostgresPostsAdapter.toDatabase(newPostData);
+        
+        await this.connection.post.update({
+            where: { id },
+            data: postInput
+        });
+    }
+
+
+    async deletePost (id: number): Promise<void> 
+    {
+        await this.connection.post.delete({
+            where: { id }
+        });   
     }
 
 }

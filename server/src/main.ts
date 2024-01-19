@@ -5,6 +5,7 @@ import { PostsRepository } from "./infra/repositories/repository-implementations
 import { Router } from "./infra/router/router";
 import { ExpressAdapter } from "./infra/server-http/express-adapter";
 import { UsersRepository } from "./infra/repositories/repository-implementations/users-repository";
+import env from "./env";
 
 config();
 
@@ -26,5 +27,5 @@ router.initAllRoutes();
 const middlewareManager = new MiddlewareManager(httpServer);
 middlewareManager.initAllMiddlewares();
 
-httpServer.listen(Number(process.env.PORT));
+httpServer.listen(Number(env.PORT));
 

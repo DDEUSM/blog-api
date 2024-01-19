@@ -1,6 +1,6 @@
 import { IPostsRepository } from "../../../../infra/repositories/repository-contracts/iposts-repository";
 import InputsCleaner from "../../../../utils/cleanInputs";
-import { PostApplicationDto } from "../../../dtos/post-dtos/post-dtos";
+import { PostDto } from "../../../dtos/post-dtos/post-dtos";
 
 export class GetPosts
 {
@@ -8,7 +8,7 @@ export class GetPosts
         private postsRepository: IPostsRepository
     ){}
 
-    async execute (postsParams: any): Promise<PostApplicationDto[]>
+    async execute (postsParams: any): Promise<PostDto[]>
     {        
         return await this.postsRepository.find(postsParams);
     }

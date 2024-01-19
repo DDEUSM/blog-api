@@ -7,13 +7,6 @@ type TPostInputProps = {
     date?: Date
 }
 
-type TPostDatabaseProps = {
-    owner_id: number, 
-    title: string,
-    content: string,        
-    id?: number,
-    date?: Date
-}
 
 type TPostApplicationProps = {
     ownerId: number, 

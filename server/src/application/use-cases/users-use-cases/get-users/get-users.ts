@@ -1,5 +1,5 @@
 import { IUsersRepository } from "../../../../infra/repositories/repository-contracts/iusers-repository";
-import { UserApplicationDto, UserInputDto } from "../../../dtos/user-dtos/user-dtos";
+import { UserDto } from "../../../dtos/user-dtos/user-dtos";
 
 export class GetUsers
 {
@@ -7,7 +7,7 @@ export class GetUsers
         private usersRepository: IUsersRepository
     ){}
 
-    async execute (userParams: any): Promise<UserApplicationDto[]>
+    async execute (userParams: any): Promise<UserDto[]>
     {                
         return await this.usersRepository.find(userParams);
     }

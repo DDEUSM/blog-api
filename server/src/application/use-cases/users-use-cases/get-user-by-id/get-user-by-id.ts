@@ -1,5 +1,5 @@
 import { IUsersRepository } from "../../../../infra/repositories/repository-contracts/iusers-repository";
-import { UserApplicationDto } from "../../../dtos/user-dtos/user-dtos";
+import { UserDto } from "../../../dtos/user-dtos/user-dtos";
 
 export class GetUserById
 {
@@ -7,7 +7,7 @@ export class GetUserById
         private usersRepository: IUsersRepository
     ){}
 
-    async execute (id: number): Promise<UserApplicationDto>
+    async execute (id: number): Promise<UserDto>
     {
         return await this.usersRepository.findUserById(id);
     }

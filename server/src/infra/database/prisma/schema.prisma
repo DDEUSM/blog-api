@@ -11,12 +11,13 @@ datasource db {
 }
 
 model User {
-  id         Int    @id @default(autoincrement())
-  first_name String
-  last_name  String
-  email      String @unique
-  gender     String @db.VarChar(6)
-  Post       Post[]
+  id            Int    @id @default(autoincrement())
+  first_name    String
+  last_name     String
+  email         String @unique
+  password_hash String @db.Text
+  refresh_token String? @db.Text
+  Post          Post[]
 
   @@map("users")
 }
