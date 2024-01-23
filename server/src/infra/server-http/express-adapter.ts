@@ -27,7 +27,6 @@ export class ExpressAdapter implements IHTTPServer
         });        
     }
 
-
     onMiddleware (httpMethod: string, uri: string, inputSchema: TInputSchema, controller: IController, middleware?: Function): void 
     {
         const validatorMiddleware = (req: Request, res: Response, next: NextFunction) => 
@@ -57,7 +56,6 @@ export class ExpressAdapter implements IHTTPServer
             try
             {
                 const output = await controller(req.body as any, req.params as any);
-
                 return res.cookie("jwt", output.refresh_token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
                 .status(output.statusCode).json(output.data);     
             }
@@ -68,9 +66,15 @@ export class ExpressAdapter implements IHTTPServer
         });        
     }
 
-    middleware (middlewareFn: Function): void
+    middleware (middlewareFn: Function, uri?: string): void
     {        
-        this.server.use(middlewareFn);
+        const params = [uri, middlewareFn].filter(param => param);
+        this.server.use(...params);
+    }
+
+    setSwagger (uri: string, serve: any, setup: Function, docs: any): void
+    {
+        this.server.use(uri, serve, setup(docs));
     }
 
     useNotFound(): void {

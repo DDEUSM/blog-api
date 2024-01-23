@@ -25,7 +25,7 @@ export class Router
             }
             if(index == dirFiles.length - 1)
             {
-                this.httpServer.useNotFound();                   
+                this.httpServer.useNotFound();                  
             }            
         });        
     }

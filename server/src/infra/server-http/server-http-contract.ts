@@ -4,7 +4,7 @@ export interface IHTTPServer {
     on (httpMethod: string, uri: string, controller: IController, middleware?: Function): void;
     onCookie (httpMethod: string, uri: string, controller: IController): void;
     onMiddleware (httpMethod: string, uri: string, inputSchema: TInputSchema, controller: IController, middleware?: Function): void;
-    middleware (middlwareFn: Function): void;
+    middleware (middlwareFn: Function, uri?: string): void;
     listen (port: number): void;
     useNotFound (): void;
 };

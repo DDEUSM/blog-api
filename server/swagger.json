@@ -1,0 +1,94 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Blog management api",
+        "description": "This api aims the blog management",
+        "termsOfService": "http://localhost:4550/terms",
+        "contact": {
+            "email": "david123@gmail.com"
+        },
+        "version": "1.0.0"       
+    },
+    "servers": [
+        {
+            "url": "http://localhost:4550",
+            "description": "Development server"
+        }
+    ],
+    "paths": {
+        "/posts" : {
+            "post": {
+                "summary": "Busca por posts",
+                "description": "This route return all posts wich be agree the input",
+                "tags": ["Posts"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Posts"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/create-user": {
+            "post": {
+                "summary": "Creates a user",
+                "description": "This routes will create a user",
+                "tags": ["Users"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Users"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Posts": {
+                "type":"object",
+                "properties": {
+                    "ownerId": {
+                        "type": "number"                        
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "number"
+                    },
+                    "date": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Users": {
+                "type": "object",
+                "properties": {
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "number"
+                    }
+                }
+            }
+        }
+    }
+   
+}
