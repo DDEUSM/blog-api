@@ -6,7 +6,7 @@ export class UpdatePost
         private postsRepository: IPostsRepository
     ){}
 
-    async execute (id: number, newPostData: any): Promise<void>
+    async execute (id: string, newPostData: any): Promise<void>
     {
         await this.postsRepository.updatePost(id, newPostData);
     }

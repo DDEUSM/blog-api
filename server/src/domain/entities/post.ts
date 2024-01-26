@@ -1,9 +1,12 @@
+
 export class Post
 {
     constructor (        
-        readonly owner_id: number, 
+        readonly owner_id: string, 
         readonly title: string,
         readonly content: string,        
-        readonly id?: number,
+        readonly id?: string,
+        readonly date?: string
     ){}
+
 }

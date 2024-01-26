@@ -7,12 +7,12 @@ export class UserDto
     readonly email: string;    
     readonly passwordHash: string;
     readonly refreshToken?: string;
-    readonly id?: number;
+    readonly id?: string;
     
     constructor ( props: TUserApplicationProps )
     {
         Object.assign(this, props);
-    }   
+    }
 }
 
 
@@ -21,7 +21,7 @@ export class DynamicUserDto
     readonly firstName?: string;
     readonly lastName?: string;
     readonly email?: string;             
-    readonly id?: number; 
+    readonly id?: string; 
 
     constructor ( props: TUserInputProps )
     {

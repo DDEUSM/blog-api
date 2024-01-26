@@ -6,7 +6,7 @@ export class DeletePost
         private postsRepository: IPostsRepository
     ){}
 
-    async execute (id: number): Promise<void>
+    async execute (id: string): Promise<void>
     {
         await this.postsRepository.deletePost(id);
     }

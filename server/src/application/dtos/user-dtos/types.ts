@@ -2,7 +2,7 @@ type TUserInputProps = {
     first_name?: string;
     last_name?: string;
     email?: string;           
-    id?: number;    
+    id?: string;    
 }
 
 
@@ -11,5 +11,5 @@ type TUserApplicationProps = {
     lastName: string;
     email: string;
     passwordHash: string;           
-    id?: number; 
+    id?: string; 
 }

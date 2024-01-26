@@ -27,6 +27,7 @@ export default class VerifyJwt
                     {
                         throw new ApiError(401, "Invalid token!");
                     }
+                    req.fullName = decoded.fullName;
                     req.email = decoded.email;
                     next();
                 }                

@@ -1,17 +1,17 @@
 
 type TPostInputProps = {
-    owner_id?: number, 
+    owner_id?: string, 
     title?: string,
     content?: string,        
-    id?: number,
+    id?: string,
     date?: Date
 }
 
 
 type TPostApplicationProps = {
-    ownerId: number, 
+    ownerId: string, 
     title: string,
     content: string,        
-    id?: number,
+    id?: string,
     date?: Date
 }

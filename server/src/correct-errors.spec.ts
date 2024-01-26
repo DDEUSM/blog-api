@@ -3,23 +3,30 @@ import { describe, expect, test } from "vitest";
 import { PostDto } from "./application/dtos/post-dtos/post-dtos";
 import { UserDto } from "./application/dtos/user-dtos/user-dtos";
 import { generateString } from "./utils/random";
+import { tokenForTest } from "./utils/token-for-test";
+import { randomUUID } from "crypto";
 
 describe("All requests should return a correct error statuscode", async () => 
 {
     const url = "http://localhost:4550";
+
+    let accessToken;    
+
+    let configHeaders;
 
     const user = new UserDto ({
         firstName: "David",
         lastName: "de Deus Mesquita",
         email: "daviddeusm@live.com",
         passwordHash: generateString(20),
-        id: 200
+        id: randomUUID()
     });
     
     const newPost = new PostDto ({
-        ownerId: 3437463,
+        ownerId: randomUUID(),
         content: "gfjgfn",
-        title: "fdgfg"
+        title: "fdgfg",
+        id: randomUUID()
     });
 
     test("user has exists", async () => 
@@ -33,9 +40,23 @@ describe("All requests should return a correct error statuscode", async () =>
             url+"/create-user", 
             user
         )
-        .catch(error => {console.log(error.response.data); return error});
+        .catch(error => error);
 
         expect(error.response.status).toBe(422);
+
+        const authResponse: any = await axios.post(
+            url+"/login",
+            { email: user.email, password: user.passwordHash }
+        ).catch(error => console.log(error.response));
+
+        accessToken = authResponse.data.accessToken;
+
+        configHeaders = {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            }
+        }
     });
 
     
@@ -45,7 +66,7 @@ describe("All requests should return a correct error statuscode", async () =>
             url+"/users", 
             { email: generateString(20)+"@live.com" }
         )
-        .catch(error => {console.log(error.response.data); return error});
+        .catch(error => error);
 
         expect(error.response.status).toBe(404);
     });
@@ -55,29 +76,45 @@ describe("All requests should return a correct error statuscode", async () =>
     {        
         const error: any = await axios.post(
             url+"/create-post",
-            newPost
+            newPost,
+            configHeaders
         )
-        .catch(error => {console.log(error.response.data); return error});
+        .catch(error => error);
 
         expect(error.response.status).toBe(404);        
-    });
-
+    });    
 
     test("Post not exists", async () => 
     {
-        const newPost = new PostDto ({
-            ownerId: 3437463,
+        const postForTest = new PostDto ({
+            ownerId: randomUUID(),
             content: "gfjgfn",
             title: "fdgfg"
         });
 
         const error: any = await axios.post(
             url+"/posts",
-            newPost
-        )
-        .catch(error => {console.log(error.response.data); return error});
+            postForTest            
+        ).catch(error => error);
 
         expect(error.response.status).toBe(404);        
+    });
+
+    test ("Trying Update an user wich not exists", async () => 
+    {  
+        const testPost = {
+            firstName: "dfdfdsd ds",
+            lastName: "dfdfdf",
+            email: "hello@gmail.com",
+        }
+
+        const error: any = await axios.put(
+            url+"/update-user/11000",
+            testPost,
+            configHeaders
+        ).catch(error => error);
+
+        expect(error.response.status).toBe(404);
     });
 
 
@@ -85,20 +122,22 @@ describe("All requests should return a correct error statuscode", async () =>
     {
         const error: any = await axios.post(
             url+"/posts",
-            { ownerId: 35545, new_content: "gfgff" }
+            { ownerId: user.id, new_content: "gfgff" },            
         )
-        .catch(error => {console.log(error.response.data); return error});
+        .catch(error => error);
         
-        expect(error.response.status).toBe(400);        ;                
+        expect(error.response.status).toBe(400);                        
+
         await axios.delete(
-            url+"/delete-user/"+user.id
-        );
+            url+"/delete-user/"+user.id,
+            configHeaders
+        ).catch(error => console.log(error.response));
     });
 
     test ("route not found", async () => 
     {
         const error: any = await axios.get(url+"/dsdsds")
-        .catch(error => { console.log(error.response.data); return error});
+        .catch(error => error);
 
         expect(error.response.status).toBe(404);
     })

@@ -15,11 +15,22 @@ export default class AuthRoutes
 
     initRoutes (): void
     {
-        this.httpServer.onMiddleware("post","/login", {
+        this.httpServer.onValidator("post","/login", {
             email: { type: "email", required: true },
             password: { type: "string", required: true }
         },
         async (body: { email: string, password: string }, params: any) => 
+        {            
+            const userLogin = new UserLogin(this.usersRepository);
+            const tokens = await userLogin.execute(body);
+            return {
+                statusCode: 200,
+                data: tokens                
+            }
+        });
+
+        this.httpServer.on("get","/refresh-token",
+        async (body:any, params: any) => 
         {            
             const userLogin = new UserLogin(this.usersRepository);
             const tokens = await userLogin.execute(body);

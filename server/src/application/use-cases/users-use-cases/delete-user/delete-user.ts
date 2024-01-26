@@ -6,7 +6,7 @@ export class DeleteUser
         private usersRepository: IUsersRepository
     ){}
 
-    async execute (id: number): Promise<void>
+    async execute (id: string): Promise<void>
     {
         await this.usersRepository.deleteUser(id);
     }

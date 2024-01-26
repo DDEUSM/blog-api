@@ -7,7 +7,7 @@ export class GetPostsById
         private postsRepository: IPostsRepository
     ){}
 
-    async execute (id: number): Promise<PostDto>
+    async execute (id: string): Promise<PostDto>
     {
         return await this.postsRepository.findById(id);
     }

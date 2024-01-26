@@ -4,9 +4,10 @@ import { Router } from "./infra/router/router";
 import { ExpressAdapter } from "./infra/server-http/express-adapter";
 import { UsersRepository } from "./infra/repositories/repository-implementations/users-repository";
 import env from "./env";
-import ErrorHandler from "./infra/middlewares/middlewares/error-handler";
+import ErrorHandler from "./infra/middlewares/middlewares-all-routes/error-handler";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocs from "../swagger.json";
+import VerifyAuthorization from "./infra/middlewares/middlewares-in-line/verify-authorization";
 
 const prismaConnection = new PrismaClient();
 const postsRepository = new PostsRepository(prismaConnection);
@@ -16,6 +17,11 @@ const repositories = {
     postsRepository,
     usersRepository 
 }
+
+export const verifyAuthorization = new VerifyAuthorization (
+    usersRepository,
+    postsRepository
+);
 
 const httpServer = new ExpressAdapter();
 

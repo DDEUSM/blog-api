@@ -18,28 +18,25 @@ export class UsersRepository implements IUsersRepository
     ): Promise<any>
     {
         const { email, password } = userCredentials;        
-
         const foundUser = await this.connection.user.findUnique({
             where: { email }
         });
-
         if (!foundUser)
         {
             throw new ApiError(401, "Incorret Credentials");
         }
         const passwordMatch = await bcrypt.compare(password, foundUser.password_hash);
-
         if (!passwordMatch)
         {
             throw new ApiError(401, "Incorrect Credentials")
-        } 
+        }         
         const newToken = jwt.sign (
-            { email: foundUser.email },
+            { id: foundUser.id },
             env.ACCESS_TOKEN_SECRET,
             { expiresIn: "1d" }
         );
         const refreshToken = jwt.sign (
-            { email: foundUser.email },
+            { id: foundUser.id },
             env.REFRESH_TOKEN_SECRET,
             { expiresIn: `1d` }
         );
@@ -54,14 +51,40 @@ export class UsersRepository implements IUsersRepository
     }
 
 
+    async userRefreshToken (refreshToken: string): Promise<string>
+    {
+        const foundUser = await this.connection.user.findUnique({
+            where: { refresh_token: refreshToken }
+        });
+        if (!foundUser)
+        {
+            throw new ApiError(401,"");
+        }
+        jwt.verify(
+            foundUser.refresh_token,
+            env.REFRESH_TOKEN_SECRET,
+            (error: any, decoded) => {
+                if (error)
+                {
+                    throw new ApiError(401, "");
+                }                
+            }
+        );
+        const newAccessToken = jwt.sign(
+            { email: foundUser.email },
+            env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "1d" }
+        )
+        return newAccessToken
+    }
+
+
     async find (userParams: any): Promise<UserDto[]> 
     {
-        const userParamsAdapted = PostgresUserAdapter.toDatabase(userParams);
-        
+        const userParamsAdapted = PostgresUserAdapter.toDatabase(userParams);        
         const users = await this.connection.user.findMany({
             where: userParamsAdapted
         });
-
         if (!users.length)
         {
             throw new ApiError(404, "Users not found!");
@@ -72,12 +95,11 @@ export class UsersRepository implements IUsersRepository
     }
 
 
-    async findUserById(id: number): Promise<UserDto> 
+    async findUserById(id: string): Promise<UserDto> 
     {
         const user = await this.connection.user.findFirst({
             where: { id }
         });
-
         if (!user)
         {
             throw new ApiError(404, "User not found!");
@@ -122,18 +144,26 @@ export class UsersRepository implements IUsersRepository
     }
 
 
-    async updateUser(id: number, newUserData: any): Promise<void> 
+    async updateUser(id: string, newUserData: any): Promise<void> 
     {
-        const userInputsAdapted = PostgresUserAdapter.toDatabase(newUserData);
+        const userInputsAdapted = PostgresUserAdapter.toDatabase(newUserData); 
+        const foundUser = await this.connection.user.findUnique({
+            where: { id }
+        });      
         
+        if (!foundUser)
+        {
+            throw new ApiError(404, "User not exists!");
+        }
+
         await this.connection.user.update({
             where: { id },
             data: userInputsAdapted
-        });
+        })
     }
 
 
-    async deleteUser(id: number): Promise<void> 
+    async deleteUser(id: string): Promise<void> 
     {
         await this.connection.user.delete({
             where: { id }

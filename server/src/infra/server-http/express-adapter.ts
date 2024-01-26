@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response} from "express";
 import { IController, IHTTPServer } from "./server-http-contract";
-import { TInputSchema, Validator } from "../middlewares/middlewares/validator";
+import { TInputSchema, Validator } from "../middlewares/middlewares-in-line/validator";
 
 export class ExpressAdapter implements IHTTPServer
 {
@@ -27,7 +27,7 @@ export class ExpressAdapter implements IHTTPServer
         });        
     }
 
-    onMiddleware (httpMethod: string, uri: string, inputSchema: TInputSchema, controller: IController, middleware?: Function): void 
+    onValidator (httpMethod: string, uri: string, inputSchema: TInputSchema, controller: IController, middleware?: Function): void 
     {
         const validatorMiddleware = (req: Request, res: Response, next: NextFunction) => 
         {

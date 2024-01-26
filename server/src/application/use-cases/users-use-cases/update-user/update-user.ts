@@ -6,7 +6,7 @@ export class UpdateUser
         private usersRepository: IUsersRepository
     ){}
 
-    async execute (id: number, newUserData: any): Promise<void>
+    async execute (id: string, newUserData: any): Promise<void>
     {
         await this.usersRepository.updateUser(id, newUserData);
     }

@@ -16,18 +16,202 @@
         }
     ],
     "paths": {
-        "/posts" : {
+        "/create-post": {
             "post": {
-                "summary": "Busca por posts",
-                "description": "This route return all posts wich be agree the input",
-                "tags": ["Posts"],
+                "summary": "Create a new post",
+                "security": [{ "bearerAuth": [] }],                
+                "tags": ["Posts"],                
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/Posts"
+                            },
+                            "examples": {
+                                "post": {
+                                    "value": {
+                                        "ownerId": "3145b9ab-9885-44c3-aefb-4db2304d01fa",
+                                        "title": "MEU PRIMEIRO POST",
+                                        "content": "publicando o primeiro de todos os tempos",
+                                        "id": "b31ae4ef-942e-4dfa-805c-1d8eb92bd5d3"                                       
+                                    } 
+                                }
                             }
                         }
+                    }
+                },
+                "responses": {                    
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Owner post not found!"
+                    },
+                    "201": {
+                        "description": "Post created sucessfully"                        
+                    }
+                }
+            }
+        },
+        "/posts" : {
+            "post": {
+                "summary": "Get posts by filters",
+                "description": "This route return all posts wich be agree the input",
+                "tags": ["Posts"],                
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Posts"
+                            },
+                            "examples": {
+                                "post": {
+                                    "value": {
+                                        "ownerId": "3145b9ab-9885-44c3-aefb-4db2304d01fa",
+                                        "title": "MEU PRIMEIRO POST",
+                                        "content": "publicando o primeiro de todos os tempos",
+                                        "id": "b31ae4ef-942e-4dfa-805c-1d8eb92bd5d3"   
+                                    } 
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {                    
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "404": {
+                        "description": "Posts not found!"
+                    },
+                    "200": {
+                        "description": "Ok, request sucessfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Posts"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}": {
+            "get": {
+                "summary": "Get a post by id",                
+                "tags": ["Posts"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",                                        
+                        "description": "The post id",
+                        "required": true
+                    }
+                ],
+                "responses": {                   
+                    "404": {
+                        "description": "Post not found"
+                    },                    
+                    "200": {
+                        "description": "Ok, request successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Posts"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/update-post/{id}" : {
+            "post": {
+                "summary": "Get posts by filters",
+                "description": "This route return all posts wich be agree the input",
+                "security": [{ "bearerToken": [] }],
+                "tags": ["Posts"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The id of post",
+                        "required": true
+                    }
+                ],                
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "post": {
+                                    "value": {                                        
+                                        "title": "",
+                                        "content": ""                                        
+                                    } 
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {                    
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Posts not found"
+                    },
+                    "200": {
+                        "description": "Ok, post updated"                    
+                    }
+                }
+            }
+        },
+        "/delete-post/{id}": {
+            "delete": {
+                "summary": "Get a post by id",
+                "security": [{ "bearerToken": [] }],                
+                "tags": ["Posts"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",                                        
+                        "description": "The post id",
+                        "required": true
+                    }
+                ],
+               "responses": {                                       
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Post not found"
+                    },
+                    "200": {
+                        "description": "Ok, post has deleted"                    
                     }
                 }
             }
@@ -44,6 +228,219 @@
                                 "$ref": "#/components/schemas/Users"
                             }
                         }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Bad request"                        
+                    },
+                    "422": {
+                        "description": "This user already exists"
+                    },                  
+                    "200": {
+                        "description": "Ok, request successfully"
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post" : {
+                "summary": "user login",
+                "description": "Authenticates the user in Api",
+                "tags": ["Users"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Credentials" 
+                            }
+                        }
+                    }
+                },
+                "responses":  {
+                    "400": {
+                        "description": "Bad request"                        
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "200": {
+                        "description": "User authenticated successfully"
+                    }
+                }
+            }
+        },
+        "/users": {
+            "post": {
+                "summary": "Get users by filters",                
+                "tags": ["Users"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Users" 
+                            }
+                        }
+                    }
+                },
+                "responses":  {
+                    "400": {
+                        "description": "Bad request"                        
+                    },
+                    "404": {
+                        "description": "Users not found!"
+                    },                    
+                    "200": {
+                        "description": "User created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Users"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/id/{id}": {
+            "get": {
+                "summary": "Get a user by id",                
+                "tags": ["Users"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",                                        
+                        "description": "The user id",
+                        "required": true
+                    }
+                ],
+                "responses": {                   
+                    "404": {
+                        "description": "User not found!"
+                    },                    
+                    "200": {
+                        "description": "Ok, Request successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Users"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/email/{email}": {
+            "get": {
+                "summary": "Get a user by email",
+                "tags": ["Users"],
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "path",
+                        "description": "The email of user",
+                        "required": true
+                    }
+                ],
+                "responses":  {                   
+                    "404": {
+                        "description": "User not found!"
+                    },                    
+                    "200": {
+                        "description": "Ok, Request successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Users"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/update-user/{id}": {
+            "post": {
+                "summary": "Update a user",
+                "security": [{ "bearerAuth": [] }],
+                "tags": ["Users"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The id of user",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                } 
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Bad request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description":"User not found!"
+                    },
+                    "200": {
+                        "description":"Ok, request successfully"
+                    }
+                }
+            }
+        },
+        "/delete-user/{id}": {
+            "delete": {
+                "summary": "Delete a user by id",
+                "security": [{ "bearerAuth": []}],
+                "tags": ["Users"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The id of user",
+                        "required": true
+                    }
+                ],
+                "responses":  {                   
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "User not found!"
+                    },                    
+                    "200": {
+                        "description": "Ok, Request successfully"
                     }
                 }
             }
@@ -87,8 +484,25 @@
                         "type": "number"
                     }
                 }
+            },
+            "Credentials": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
             }
         }
     }
-   
 }

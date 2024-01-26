@@ -1,5 +1,4 @@
-import { UserInfo } from "os";
-import { DynamicUserDto, UserDto } from "../../../application/dtos/user-dtos/user-dtos";
+import { UserDto } from "../../../application/dtos/user-dtos/user-dtos";
 import InputsCleaner from "../../../utils/cleanInputs";
 import { PostDto } from "../../../application/dtos/post-dtos/post-dtos";
 

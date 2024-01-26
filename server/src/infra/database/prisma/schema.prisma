@@ -11,23 +11,23 @@ datasource db {
 }
 
 model User {
-  id            Int    @id @default(autoincrement())
-  first_name    String
-  last_name     String
-  email         String @unique
-  password_hash String @db.Text
-  refresh_token String? @db.Text
+  id            String  @id   @db.VarChar(36)
+  first_name    String  @db.VarChar(100)
+  last_name     String  @db.VarChar(150)
+  email         String  @unique
+  password_hash String  @db.Text
+  refresh_token String? @db.Text  @unique
   Post          Post[]
 
   @@map("users")
 }
 
 model Post {
-  id       Int      @id @default(autoincrement())
-  title    String   @db.VarChar(255)
-  content  String?
+  id       String   @id   @db.VarChar(36)
+  title    String   @db.VarChar(100)
+  content  String  @db.Text
   author   User?    @relation(fields: [owner_id], references: [id])
-  owner_id Int?
+  owner_id String   
   date     DateTime @default(now())
 
   @@map("posts")

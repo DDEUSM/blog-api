@@ -4,6 +4,7 @@ import { UserDto } from "./application/dtos/user-dtos/user-dtos";
 import { PostDto } from "./application/dtos/post-dtos/post-dtos";
 import { generateRandomNumber, generateString } from "./utils/random";
 import bcrypt from  "bcrypt";
+import { randomUUID } from "crypto";
 
 const url = "http://localhost:4550";
 
@@ -15,14 +16,14 @@ describe("Happy Routes test", () =>
         lastName: generateString(20),
         email: generateString(20)+"@live.com",
         passwordHash: generateString(20),
-        id: generateRandomNumber()
+        id: randomUUID()
     });
 
     const newPost = new PostDto ({
         ownerId: user.id,
         title: "MEU POST",
         content: "Meu primeiro post neste blog",
-        id: generateRandomNumber()            
+        id: randomUUID()            
     }); 
     
     test("create a new user", async () => 
@@ -56,12 +57,7 @@ describe("Happy Routes test", () =>
         ).catch(error => console.log(error.response.data));
 
         const response2: any = await axios.get(
-            url+"/users/id/"+user.id,
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
-            }
+            url+"/users/id/"+user.id
         ).catch(error => console.log(error.response.data.message));
 
         const response3: any = await axios.get(
@@ -86,7 +82,6 @@ describe("Happy Routes test", () =>
         
         expect(match2).toBe(true);
                                
-
         expect(response3.data.email).toBe(user.email);
         expect(response3.data.firstName).toBe(user.firstName);
         expect(response3.data.lastName).toBe(user.lastName);
@@ -98,11 +93,45 @@ describe("Happy Routes test", () =>
                
     });
 
+    test("Update user firstName and lastname", async () => 
+    {       
+        const body = { firstName: "David", lastName: "de Deus Mesquita" };
+        const configOptions = {
+            headers: {                
+                Authorization: `Bearer ${accessToken}`
+            }             
+        };        
+
+        const response1: any = await axios.post(
+            url+"/update-user/"+user.id,
+            body,  
+            configOptions      
+        ).catch(error => {console.log(error.response)});
+
+        expect(response1.status).toBe(200);
+
+        const response: any = await axios.get(
+            url+"/users/id/"+user.id,
+            configOptions
+        ).catch(error => {console.log(error.response)});
+
+        expect(response.data.id).toBe(user.id);
+        expect(response.data.firstName).toBe(body.firstName);
+        expect(response.data.lastName).toBe(body.lastName);
+    });
+
     test("create a new post", async () => 
     {
+        const configOptions = {
+            headers: {                
+                Authorization: `Bearer ${accessToken}`
+            }             
+        };
+
         const response: any = await axios.post(
             url+"/create-post",
-            newPost
+            newPost,
+            configOptions
         ).catch(error => console.log(error.response.data));
 
         expect(response.status).toBe(201);
@@ -110,6 +139,13 @@ describe("Happy Routes test", () =>
 
     test("get the post wich has been created before", async () => 
     {
+
+        const configOptions = {
+            headers: {                
+                Authorization: `Bearer ${accessToken}`
+            }             
+        };
+
         const response: any = await axios.post (
             url+"/posts",
             newPost
@@ -125,13 +161,19 @@ describe("Happy Routes test", () =>
         expect(response2.status).toBe(200);
         expect(response2.data.title).toBe(newPost.title);        
 
-        await axios.delete (
-            url+"/delete-post/"+newPost.id
-        ).catch(error => console.log(error.response.data));
+        const deletePost =  await axios.delete (
+            url+"/delete-post/"+newPost.id,
+            configOptions
+        ).catch(error => { console.log(error.response.data); return error});
 
-        await axios.delete (
-            url+"/delete-user/"+user.id
-        ).catch(error => console.log(error.response.data));
+        expect(deletePost.status).toBe(200);
+
+        const deleteUser = await axios.delete (
+            url+"/delete-user/"+user.id,
+            configOptions
+        ).catch(error => { console.log(error.response.data); return error });
+
+        expect(deleteUser.status).toBe(200);
 
         const error: any = await axios.get(
             url+"/posts/"+newPost.id,

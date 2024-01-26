@@ -15,14 +15,12 @@ export class Router
         const dirFiles = readdirSync(path.normalize(`${dirPath}/routes`))
         
         dirFiles.map(async (fileName, index) => 
-        {
-            if(fileName !== "types.ts")
-            {
-                const routes = new (await import (`./routes/${fileName}`))
-                .default(this.httpServer, this.repositories);
+        {           
+            const routes = new (await import (`./routes/${fileName}`))
+            .default(this.httpServer, this.repositories);
 
-                routes.initRoutes();                        
-            }
+            routes.initRoutes();                        
+            
             if(index == dirFiles.length - 1)
             {
                 this.httpServer.useNotFound();                  

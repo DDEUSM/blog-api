@@ -1,10 +1,10 @@
 
 export class PostDto
 {
-    readonly ownerId: number 
+    readonly ownerId: string 
     readonly title: string
     readonly content: string        
-    readonly id?: number
+    readonly id?: string
     readonly date?: Date
 
     constructor ( props: TPostApplicationProps )
@@ -15,10 +15,10 @@ export class PostDto
 
 export class DynamicPostDto 
 {
-    readonly owner_id?: number 
+    readonly owner_id?: string 
     readonly title?: string
     readonly content?: string       
-    readonly id?: number
+    readonly id?: string
     readonly date?: Date
 
     constructor ( props: TPostInputProps )

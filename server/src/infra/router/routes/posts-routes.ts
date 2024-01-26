@@ -4,6 +4,7 @@ import { DeletePost } from "../../../application/use-cases/posts-use-cases/delet
 import { GetPostsById } from "../../../application/use-cases/posts-use-cases/get-post-by-id/get-post-by-id";
 import { GetPosts } from "../../../application/use-cases/posts-use-cases/get-posts/get-posts";
 import { UpdatePost } from "../../../application/use-cases/posts-use-cases/update-post/update-post";
+import { verifyAuthorization } from "../../../main";
 
 import { IPostsRepository } from "../../repositories/repository-contracts/iposts-repository";
 import { IHTTPServer } from "../../server-http/server-http-contract";
@@ -24,7 +25,7 @@ export default class PostsRoutes
         this.httpServer.on("get", "/posts/:id", async (body: any, params: any) => 
         {
             const getPostsById = new GetPostsById(this.postsRepository);
-            const response = await getPostsById.execute(Number(params.id));
+            const response = await getPostsById.execute(params.id);
             return {
                 statusCode: 200,
                 data: response
@@ -32,11 +33,11 @@ export default class PostsRoutes
         });
         
 
-        this.httpServer.onMiddleware("post", "/posts", {
-            ownerId: { type: "number" },
+        this.httpServer.onValidator("post", "/posts", {
+            ownerId: { type: "uuidv4" },
             title: { type: "string" },
             content: { type: "string" },
-            id: {type: "number" },
+            id: {type: "uuidv4" },
             date: { type: "date"}
         },         
         async (body: DynamicPostDto, params: any) => 
@@ -50,11 +51,11 @@ export default class PostsRoutes
         });
 
 
-        this.httpServer.onMiddleware("post", "/create-post", {
-            ownerId: { type: "number", required: true },
+        this.httpServer.onValidator("post", "/create-post", {
+            ownerId: { type: "uuidv4", required: true },
             title: { type: "string", required: true },
             content: { type: "string", required: true },
-            id: {type: "number" },
+            id: {type: "uuidv4", required: true },
             date: { type: "date"}
         },
         async (body: PostDto, params: any) => 
@@ -65,10 +66,10 @@ export default class PostsRoutes
                 statusCode: 201,
                 data: { message: "Post has been created!" }
             }
-        });
+        }, verifyAuthorization.middleware());
 
 
-        this.httpServer.onMiddleware("put", "/update-post/:id", {            
+        this.httpServer.onValidator("put", "/update-post/:id", {            
             title: { type: "string" },
             content: { type: "string" }            
         }, async (body: any, params: any) => {
@@ -78,18 +79,18 @@ export default class PostsRoutes
                 statusCode: 200,
                 data: { message: "Post has been up-to-date!" }
             }
-        });
+        }, verifyAuthorization.middleware("postRoutes"));
 
 
         this.httpServer.on("delete", "/delete-post/:id", 
         async (body: any, params: any) => 
         {
             const deletePost = new DeletePost( this.postsRepository );
-            await deletePost.execute(Number(params.id));
+            await deletePost.execute(params.id);
             return {
                 statusCode: 200,
                 data: { message: "Post was deleted!" }
             }
-        })
+        }, verifyAuthorization.middleware("postRoutes"))
     }
 }

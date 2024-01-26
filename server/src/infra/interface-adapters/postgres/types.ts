@@ -4,7 +4,7 @@ type TUserInput = {
     email?: string,
     passwordHash?: string,
     refreshToken?: string,
-    id?: number
+    id?: string
 }
 
 type TUserDatabase = {
@@ -13,21 +13,21 @@ type TUserDatabase = {
     email: string,
     password_hash: string,
     refresh_token?: string,
-    id: number
+    id: string
 }
 
 type TPostInput = {
-    ownerId?: number,
+    ownerId?: string,
     title?: string,
     content?: string,
-    id?: number,
+    id?: string,
     date?: Date
 }
 
 type TPostDatabase = {
-    owner_id: number,
+    owner_id: string,
     title: string,
     content: string,
-    id: number,
+    id: string,
     date: Date
 }

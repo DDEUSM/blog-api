@@ -1,7 +1,8 @@
+
 import { ApiError } from "../../../domain/errors/api-error";
 
 
-type SchemaTypes = "string" | "email" | "number" | "uuid" | "date";
+type SchemaTypes = "string" | "email" | "number" | "uuidv4" | "date";
 
 export type TInputSchema = {
     [key: string]: { type: SchemaTypes, required?: boolean }
@@ -42,7 +43,6 @@ export class Validator
         {
             throw new ApiError(400, `Bad request, invalid body request type values ${JSON.stringify(verifyInputs)}!`);
         }
-
         next();
     }
 
@@ -53,7 +53,7 @@ export class Validator
     
     private static number (value: string)
     { 
-        return !isNaN(Number(value) + 1)? true : false;
+        return Number(value)? true : false;
     }
 
     private static string (value: string)
@@ -63,12 +63,13 @@ export class Validator
 
     private static date (value: string)
     { 
-        return true;
+        return new Date(value).getDay()? true : false;
     }
 
-    private static uuid (value: string)
+    private static uuidv4 (value: string)
     { 
-        return true;
+        const regex = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;        
+        return regex.exec(value)? true : false;       
     }
 }
 

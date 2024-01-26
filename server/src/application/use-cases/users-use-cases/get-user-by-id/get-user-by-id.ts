@@ -7,7 +7,7 @@ export class GetUserById
         private usersRepository: IUsersRepository
     ){}
 
-    async execute (id: number): Promise<UserDto>
+    async execute (id: string): Promise<UserDto>
     {
         return await this.usersRepository.findUserById(id);
     }
