@@ -62,7 +62,7 @@ export default class UserRoutes
             firstName: { type: "string", required: true },
             lastName: { type: "string", required: true },
             email: { type: "email", required: true },
-            passwordHash: { type: "string", required: true },
+            password: { type: "string", required: true },
             refreshToken: { type: "string" },
             id: { type: "uuidv4" }
         }, async (body: any, params: any) => {            

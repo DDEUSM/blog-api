@@ -11,6 +11,7 @@ describe("All requests should return a correct error statuscode", async () =>
     const url = "http://localhost:4550";
 
     let accessToken;    
+    let invalidAccessToken = tokenForTest();
 
     let configHeaders;
 
@@ -18,7 +19,7 @@ describe("All requests should return a correct error statuscode", async () =>
         firstName: "David",
         lastName: "de Deus Mesquita",
         email: "daviddeusm@live.com",
-        passwordHash: generateString(20),
+        password: generateString(20),
         id: randomUUID()
     });
     
@@ -46,7 +47,7 @@ describe("All requests should return a correct error statuscode", async () =>
 
         const authResponse: any = await axios.post(
             url+"/login",
-            { email: user.email, password: user.passwordHash }
+            { email: user.email, password: user.password }
         ).catch(error => console.log(error.response));
 
         accessToken = authResponse.data.accessToken;
@@ -132,6 +133,20 @@ describe("All requests should return a correct error statuscode", async () =>
             url+"/delete-user/"+user.id,
             configHeaders
         ).catch(error => console.log(error.response));
+    });
+
+    test ("Jwt token not authorized", async () => 
+    {
+        const error = await axios.delete(
+            url+"/delete-user/"+randomUUID,
+            {
+                headers : {
+                    Authorization: invalidAccessToken
+                }
+            }
+        ).catch(error => error);
+
+        expect(error.response.status).toBe(403);
     });
 
     test ("route not found", async () => 

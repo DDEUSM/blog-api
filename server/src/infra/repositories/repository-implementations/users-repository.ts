@@ -133,7 +133,7 @@ export class UsersRepository implements IUsersRepository
             throw new ApiError(422, "User has exists!");
         }        
         const salt = await bcrypt.genSalt(12);
-        const hash = await bcrypt.hash(newUserParams.passwordHash, salt);
+        const hash = await bcrypt.hash(newUserParams.password, salt);
         const newUser = { ...newUserParams, passwordHash: hash };
 
         const userAdapted = PostgresUserAdapter.toDatabase(newUser);
