@@ -5,7 +5,7 @@ export class UserDto
     readonly firstName: string;
     readonly lastName: string;
     readonly email: string;    
-    readonly passwordHash: string;
+    readonly password: string;
     readonly refreshToken?: string;
     readonly id?: string;
     

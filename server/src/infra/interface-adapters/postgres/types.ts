@@ -2,7 +2,7 @@ type TUserInput = {
     firstName?: string,
     lastName?: string,
     email?: string,
-    passwordHash?: string,
+    password?: string,
     refreshToken?: string,
     id?: string
 }

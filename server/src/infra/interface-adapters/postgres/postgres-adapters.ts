@@ -11,7 +11,7 @@ export class PostgresUserAdapter
             first_name: user.firstName,
             last_name: user.lastName,
             email: user.email,
-            password_hash: user.passwordHash,
+            password_hash: user.password,
             refresh_token: user.refreshToken,
             id: user.id
         });
@@ -23,7 +23,7 @@ export class PostgresUserAdapter
             firstName: user.first_name,
             lastName: user.last_name,
             email: user.email,
-            passwordHash: user.password_hash,
+            password: user.password_hash,
             refreshToken: user.refresh_token,
             id: user.id
         }) as UserDto;

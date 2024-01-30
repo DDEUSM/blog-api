@@ -15,7 +15,7 @@ describe("Happy Routes test", () =>
         firstName: generateString(10),
         lastName: generateString(20),
         email: generateString(20)+"@live.com",
-        passwordHash: generateString(20),
+        password: generateString(20),
         id: randomUUID()
     });
 
@@ -40,7 +40,7 @@ describe("Happy Routes test", () =>
     {
         const response = await axios.post(
             url+"/login",
-            { email: user.email, password: user.passwordHash },
+            { email: user.email, password: user.password },
         ).catch(error => { console.log(error.response.data); return error });
         
         expect(response.data.accessToken).toBeTruthy();
@@ -68,8 +68,8 @@ describe("Happy Routes test", () =>
         expect(response.data[0].firstName).toBe(user.firstName);
         expect(response.data[0].lastName).toBe(user.lastName);      
 
-        const match = await bcrypt.compare(user.passwordHash, 
-            response.data[0].passwordHash)
+        const match = await bcrypt.compare(user.password, 
+            response.data[0].password)
         
         expect(match).toBe(true);               
         
@@ -77,8 +77,8 @@ describe("Happy Routes test", () =>
         expect(response2.data.firstName).toBe(user.firstName);
         expect(response2.data.lastName).toBe(user.lastName);
 
-        const match2 = await bcrypt.compare(user.passwordHash, 
-            response2.data.passwordHash)
+        const match2 = await bcrypt.compare(user.password, 
+            response2.data.password)
         
         expect(match2).toBe(true);
                                
@@ -86,8 +86,8 @@ describe("Happy Routes test", () =>
         expect(response3.data.firstName).toBe(user.firstName);
         expect(response3.data.lastName).toBe(user.lastName);
 
-        const match3 = await bcrypt.compare(user.passwordHash, 
-            response3.data.passwordHash)
+        const match3 = await bcrypt.compare(user.password, 
+            response3.data.password)
         
         expect(match3).toBe(true);
                

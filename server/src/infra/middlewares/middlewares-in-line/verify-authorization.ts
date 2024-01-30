@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 import { IPostsRepository } from "../../repositories/repository-contracts/iposts-repository";
 
 export default class VerifyAuthorization
-{       
+{   
+    private invalidTokenError = new ApiError(401, "Invalid token");
+    private NotAuthorizedError = new ApiError(403, "Not authorized");
     
     constructor (
         private usersRepository: IUsersRepository,
@@ -13,15 +15,17 @@ export default class VerifyAuthorization
     ){}
 
     private verifyJwt (req: any, output: any): OutputType
-    { 
-        const error = new ApiError(401, "token is empty");
-        let response: OutputType;
+    {                 
         const authHeader = req.headers["authorization"];
         if (!authHeader)
         {
-            return { error, output: null }
+            return { error: this.invalidTokenError, output: null }
         }
         const token = authHeader.split(" ")[1];        
+        if (!token)
+        {
+            return { error: this.invalidTokenError, output: null }
+        }
         jwt.verify(
             token, 
             env.ACCESS_TOKEN_SECRET,
@@ -33,39 +37,37 @@ export default class VerifyAuthorization
                 output.id = decoded.id         
             }                
         ); 
-        return output.id? { error: null, output }: {error, output}
+        return output.id? { error: null, output }: {error: this.invalidTokenError, output}
     }
 
 
     async userRoutes ( id: string ): Promise<OutputType>
-    {
-        const error = new ApiError(401, "");
+    {        
         const foundUser = await this.usersRepository.findUserById(id)
         .catch(error => {});
         if (!foundUser)
         {
-            return { error, match: false }
+            return { error: this.NotAuthorizedError, match: false }
         }        
         if (!(id === foundUser.id))
         {
-            return { error, match: false }
+            return { error: this.NotAuthorizedError, match: false }
         }
         return { error: null, match: true }
     }
 
 
     async postRoutes ( id: string ): Promise<OutputType>
-    {
-        const error = new ApiError(401, "");
+    {        
         const foundUser = await this.postsRepository.findAuthorByPostId(id)
         .catch(() => {});
         if (!foundUser)
         {
-            return { error, match: false };
+            return { error: this.NotAuthorizedError, match: false };
         }
         if (!(id === foundUser.id))
         {
-            return { error, match: false }
+            return { error: this.NotAuthorizedError, match: false }
         }
         return { error: null, match: true }
     }
@@ -78,7 +80,8 @@ export default class VerifyAuthorization
             const { error, output } = this.verifyJwt(req, {});
             if (error)
             {
-                return next(error);
+                res.status(error.statusCode).json(error.message);
+                return;
             }            
             if (verify)
             {
@@ -86,9 +89,9 @@ export default class VerifyAuthorization
                 const { error, match } = await this[verify](id);
                 if (error)
                 {
-                    return next(error);
-                }
-                return next();
+                    res.status(error.statusCode).json(error.message);
+                    return;
+                }                
             }         
             next();
         }
