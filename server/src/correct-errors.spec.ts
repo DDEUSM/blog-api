@@ -135,13 +135,13 @@ describe("All requests should return a correct error statuscode", async () =>
         ).catch(error => console.log(error.response));
     });
 
-    test ("Jwt token not authorized", async () => 
+    test ("Jwt not authorized", async () => 
     {
         const error = await axios.delete(
             url+"/delete-user/"+randomUUID,
             {
                 headers : {
-                    Authorization: invalidAccessToken
+                    Authorization: "Bearer "+invalidAccessToken
                 }
             }
         ).catch(error => error);

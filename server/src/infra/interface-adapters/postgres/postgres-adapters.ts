@@ -23,7 +23,7 @@ export class PostgresUserAdapter
             firstName: user.first_name,
             lastName: user.last_name,
             email: user.email,
-            passwordHash: user.password_hash,
+            password: user.password_hash,
             refreshToken: user.refresh_token,
             id: user.id
         }) as UserDto;

@@ -16,7 +16,7 @@ export default class VerifyAuthorization
 
     private verifyJwt (req: any, output: any): OutputType
     {                 
-        const authHeader = req.headers["Authorization"];
+        const authHeader = req.headers["authorization"];
         if (!authHeader)
         {
             return { error: this.invalidTokenError, output: null }
