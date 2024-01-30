@@ -6,7 +6,6 @@ import { GetUserById } from "../../../application/use-cases/users-use-cases/get-
 import { GetUsers } from "../../../application/use-cases/users-use-cases/get-users/get-users";
 import { UpdateUser } from "../../../application/use-cases/users-use-cases/update-user/update-user";
 import { verifyAuthorization } from "../../../main";
-import VerifyJwt from "../../middlewares/middlewares-in-line/verify-jwt";
 import { IUsersRepository } from "../../repositories/repository-contracts/iusers-repository";
 import { IHTTPServer } from "../../server-http/server-http-contract";
 
@@ -28,7 +27,7 @@ export default class UserRoutes
             lastName: { type: "string" },
             email: { type: "email" },            
             id: { type: "uuidv4" }
-        }, async (body: DynamicUserDto, params: any) => {            
+        }, async (body: DynamicUserDto, params: any, cookies: any) => {            
             const getUsers = new GetUsers ( this.usersRepository );
             const users = await getUsers.execute(body);
             return {
@@ -38,7 +37,7 @@ export default class UserRoutes
         });
 
 
-        this.httpServer.on("get", "/users/id/:id", async (body: any, params: any) => {
+        this.httpServer.on("get", "/users/id/:id", async (body: any, params: any, cookies: any) => {
             const getUserById = new GetUserById ( this.usersRepository );             
             const user = await getUserById.execute(params.id);
             return {
@@ -48,7 +47,7 @@ export default class UserRoutes
         });
 
 
-        this.httpServer.on("get", "/users/email/:email", async (body: any, params: any) => {
+        this.httpServer.on("get", "/users/email/:email", async (body: any, params: any, cookies: any) => {
             const getUserByEmail = new GetUserByEmail ( this.usersRepository );
             const user = await getUserByEmail.execute(params.email);
             return {
@@ -65,7 +64,7 @@ export default class UserRoutes
             password: { type: "string", required: true },
             refreshToken: { type: "string" },
             id: { type: "uuidv4" }
-        }, async (body: any, params: any) => {            
+        }, async (body: any, params: any, cookies: any) => {            
             const createUser = new CreateUser ( this.usersRepository );
             await createUser.execute(body);
             return {
@@ -79,7 +78,7 @@ export default class UserRoutes
             firstName: { type: "string" },
             lastName: { type: "string" },
             email: { type: "email" },                       
-        }, async (body: any, params: any) => {   
+        }, async (body: any, params: any, cookies: any) => {   
             const updateUser = new UpdateUser(this.usersRepository);
             await updateUser.execute(params.id, body);
             return {
@@ -89,7 +88,7 @@ export default class UserRoutes
         }, verifyAuthorization.middleware("userRoutes"))
 
 
-        this.httpServer.on("delete", "/delete-user/:id", async (body: any, params: any) => {            
+        this.httpServer.on("delete", "/delete-user/:id", async (body: any, params: any, cookies: any) => {            
             const deleteUser = new DeleteUser(this.usersRepository);
             await deleteUser.execute(params.id);
             return {

@@ -22,7 +22,8 @@ export default class PostsRoutes
 
     initRoutes(): void
     {
-        this.httpServer.on("get", "/posts/:id", async (body: any, params: any) => 
+        this.httpServer.on("get", "/posts/:id", 
+        async (body: any, params: any, cookies: any) => 
         {
             const getPostsById = new GetPostsById(this.postsRepository);
             const response = await getPostsById.execute(params.id);
@@ -40,7 +41,7 @@ export default class PostsRoutes
             id: {type: "uuidv4" },
             date: { type: "date"}
         },         
-        async (body: DynamicPostDto, params: any) => 
+        async (body: DynamicPostDto, params: any, cookies: any) => 
         {   
             const getPosts = new GetPosts(this.postsRepository);
             const response = await getPosts.execute(body);
@@ -58,7 +59,7 @@ export default class PostsRoutes
             id: {type: "uuidv4", required: true },
             date: { type: "date"}
         },
-        async (body: PostDto, params: any) => 
+        async (body: PostDto, params: any, cookies: any) => 
         {
             const createPost = new CreatePost( this.postsRepository );
             await createPost.execute(body);
@@ -72,7 +73,7 @@ export default class PostsRoutes
         this.httpServer.onValidator("put", "/update-post/:id", {            
             title: { type: "string" },
             content: { type: "string" }            
-        }, async (body: any, params: any) => {
+        }, async (body: any, params: any, cookies: any) => {
             const updatePost = new UpdatePost( this.postsRepository );
             await updatePost.execute(params.id, body);
             return {
@@ -83,7 +84,7 @@ export default class PostsRoutes
 
 
         this.httpServer.on("delete", "/delete-post/:id", 
-        async (body: any, params: any) => 
+        async (body: any, params: any, cookies: any) => 
         {
             const deletePost = new DeletePost( this.postsRepository );
             await deletePost.execute(params.id);

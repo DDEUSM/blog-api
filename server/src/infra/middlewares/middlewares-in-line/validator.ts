@@ -11,11 +11,10 @@ export type TInputSchema = {
 
 export class Validator
 {
-    static validateInputs (req: any, res: any, next: any, schema: TInputSchema)
-    {           
+    static validateInputs (req: any, res: any, next: any, schema: any)
+    {                    
         const schemaKeys = Object.keys(schema);
         let error = false;
-
         Object.keys(req.body).map(key => 
         {
             if (!schemaKeys.includes(key))
@@ -23,7 +22,6 @@ export class Validator
                 throw new ApiError(400, "Bad request, invalid body request properties!");
             }                
         });        
-
         const verifyInputs = schemaKeys.reduce((results: any, key: string) => 
         {
             if (req.body[key])
@@ -37,13 +35,12 @@ export class Validator
             : function(){ error = true; return false}();
             return results;
             
-        }, {});
-        
+        }, {});        
         if (error)
         {
             throw new ApiError(400, `Bad request, invalid body request type values ${JSON.stringify(verifyInputs)}!`);
         }
-        next();
+        next();        
     }
 
     private static email (value: string)

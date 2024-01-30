@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { PostgresUserAdapter } from "../../interface-adapters/postgres/postgres-adapters";
 import env from "../../../env";
+import { randomUUID } from "crypto";
 
 export class UsersRepository implements IUsersRepository
 {
@@ -53,29 +54,30 @@ export class UsersRepository implements IUsersRepository
 
     async userRefreshToken (refreshToken: string): Promise<string>
     {
+        const InvalidRefreshTokenError = new ApiError(401,"Invalid RefreshToken");
         const foundUser = await this.connection.user.findUnique({
             where: { refresh_token: refreshToken }
         });
         if (!foundUser)
         {
-            throw new ApiError(401,"");
+            throw InvalidRefreshTokenError;
         }
         jwt.verify(
             foundUser.refresh_token,
             env.REFRESH_TOKEN_SECRET,
-            (error: any, decoded) => {
-                if (error)
+            (error: any, decoded: any) => {
+                if (error || decoded.id !== foundUser.id)
                 {
-                    throw new ApiError(401, "");
+                    throw InvalidRefreshTokenError;
                 }                
             }
         );
         const newAccessToken = jwt.sign(
-            { email: foundUser.email },
+            { id: foundUser.id },
             env.ACCESS_TOKEN_SECRET,
             { expiresIn: "1d" }
-        )
-        return newAccessToken
+        );
+        return newAccessToken;
     }
 
 
@@ -126,11 +128,14 @@ export class UsersRepository implements IUsersRepository
     {
         const userHasExists = await this.connection.user.findFirst({
             where: { email: newUserParams.email }
-        });
-
+        });        
         if (userHasExists)
         {
             throw new ApiError(422, "User has exists!");
+        }
+        if (!newUserParams.id)
+        {
+            newUserParams.id = randomUUID();
         }        
         const salt = await bcrypt.genSalt(12);
         const hash = await bcrypt.hash(newUserParams.password, salt);

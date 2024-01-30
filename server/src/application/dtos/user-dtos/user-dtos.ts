@@ -7,7 +7,7 @@ export class UserDto
     readonly email: string;    
     readonly password: string;
     readonly refreshToken?: string;
-    readonly id?: string;
+    id?: string;
     
     constructor ( props: TUserApplicationProps )
     {

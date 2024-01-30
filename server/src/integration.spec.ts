@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import axios from "axios";
 import { UserDto } from "./application/dtos/user-dtos/user-dtos";
 import { PostDto } from "./application/dtos/post-dtos/post-dtos";
-import { generateRandomNumber, generateString } from "./utils/random";
+import { generateString } from "./utils/random";
 import bcrypt from  "bcrypt";
 import { randomUUID } from "crypto";
 
@@ -26,6 +26,7 @@ describe("Happy Routes test", () =>
         id: randomUUID()            
     }); 
     
+
     test("create a new user", async () => 
     {
         const response: any = await axios.post(
@@ -43,10 +44,11 @@ describe("Happy Routes test", () =>
             { email: user.email, password: user.password },
         ).catch(error => { console.log(error.response.data); return error });
         
-        expect(response.data.accessToken).toBeTruthy();
-        expect(response.data.refreshToken).toBeTruthy();
+        console.log(response);
+        expect(response.data.accessToken).toBeTruthy();      
 
         accessToken = response.data.accessToken;
+
     });
 
     test ("get the user wich has been created before", async () => 
@@ -137,9 +139,9 @@ describe("Happy Routes test", () =>
         expect(response.status).toBe(201);
     });
 
+    
     test("get the post wich has been created before", async () => 
     {
-
         const configOptions = {
             headers: {                
                 Authorization: `Bearer ${accessToken}`
@@ -160,7 +162,31 @@ describe("Happy Routes test", () =>
 
         expect(response2.status).toBe(200);
         expect(response2.data.title).toBe(newPost.title);        
+    });   
+    
+    test ("update a post", async () => 
+    {
+        const body = { title: "Título atualizado", content: "Título atualizado com sucesso!"}
+        const configOptions = {
+            headers: {
+                Authorization: "Bearer "+accessToken
+            }
+        }
+        const response = await axios.put(
+            url+"/update-post/"+newPost.id,
+            body,
+            configOptions
+        )
 
+        expect(response.data.message).toBe("Post has been up-to-date!");
+        
+        const updatedPost = await axios.get(
+            url+"/posts/"+newPost.id
+        );
+
+        expect(updatedPost.data.title).toBe(body.title);
+        expect(updatedPost.data.content).toBe(body.content);    
+        
         const deletePost =  await axios.delete (
             url+"/delete-post/"+newPost.id,
             configOptions
@@ -183,13 +209,11 @@ describe("Happy Routes test", () =>
 
         const error2: any = await axios.get(
             url+"/users/id/"+user.id,
-            { headers: {
-                Authorization: `Bearer ${accessToken}`
-            }}
+            configOptions
         ).catch(error => {console.log(error.response.data); return error});
 
         expect(error2.response.status).toBe(404);        
-    });    
+    });
     
 });
 

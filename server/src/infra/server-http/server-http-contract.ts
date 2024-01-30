@@ -1,8 +1,7 @@
 import { TInputSchema } from "../middlewares/middlewares-in-line/validator";
 
 export interface IHTTPServer {
-    on (httpMethod: HttpMethodType, uri: string, controller: IController, middleware?: Function): void;
-    onCookie (httpMethod: HttpMethodType, uri: string, controller: IController): void;
+    on (httpMethod: HttpMethodType, uri: string, controller: IController, middleware?: Function): void;    
     onValidator (httpMethod: HttpMethodType, uri: string, inputSchema: TInputSchema, controller: IController, middleware?: Function): void;
     middleware (middlwareFn: Function, uri?: string): void;
     listen (port: number): void;
@@ -11,4 +10,4 @@ export interface IHTTPServer {
 
 export type HttpMethodType = "get" | "post" | "put" | "delete";
 
-export type IController = (body: any, params: any) => any;
+export type IController = ( body: any, params: any, cookie?: any ) => Promise<{statusCode: number, data: {[key: string]: any}, toCookie?: any}>;
