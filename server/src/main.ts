@@ -6,8 +6,9 @@ import { UsersRepository } from "./infra/repositories/repository-implementations
 import env from "./env";
 import ErrorHandler from "./infra/middlewares/middlewares-all-routes/error-handler";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocs from "../swagger.json";
 import VerifyAuthorization from "./infra/middlewares/middlewares-in-line/verify-authorization";
+import { requireModule } from "./utils/requireModule";
+const swaggerDocs = requireModule("../../swagger.json");
 
 const prismaConnection = new PrismaClient();
 const postsRepository = new PostsRepository(prismaConnection);

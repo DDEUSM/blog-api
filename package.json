@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "build": "tsup ./server/src",
+    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "migrate": "npx prisma migrate deploy",
     "start": "node ,/server/src",
     "start:dev": "dotenv -e .env.development -- tsx watch ./server/src/main.ts",
@@ -41,6 +42,7 @@
     "@types/swagger-ui-express": "^4.1.6",
     "esbuild-plugin-file-path-extensions": "^2.0.0",
     "prisma": "^5.8.0",
+    "tsc-alias": "^1.8.8",
     "tsup": "^8.0.1"
   },
   "prisma": {
