@@ -30,7 +30,7 @@ describe("Happy Routes test", () =>
     test("create a new user", async () => 
     {
         const response: any = await axios.post(
-            url+"/create-user", 
+            url+"/users", 
             user
         ).catch(error => console.log(error.response.data))
 
@@ -53,9 +53,9 @@ describe("Happy Routes test", () =>
 
     test ("get the user wich has been created before", async () => 
     {
-        const response: any = await axios.post(
+        const response: any = await axios.get(
             url+"/users", 
-            { email: user.email, firstName: user.firstName }
+            {params: { email: user.email, firstName: user.firstName }}
         ).catch(error => console.log(error.response.data));
 
         const response2: any = await axios.get(
@@ -104,8 +104,8 @@ describe("Happy Routes test", () =>
             }             
         };        
 
-        const response1: any = await axios.post(
-            url+"/update-user/"+user.id,
+        const response1: any = await axios.put(
+            url+"/users/"+user.id,
             body,  
             configOptions      
         ).catch(error => {console.log(error.response)});
@@ -131,7 +131,7 @@ describe("Happy Routes test", () =>
         };
 
         const response: any = await axios.post(
-            url+"/create-post",
+            url+"/posts",
             newPost,
             configOptions
         ).catch(error => console.log(error.response.data));
@@ -148,9 +148,9 @@ describe("Happy Routes test", () =>
             }             
         };
 
-        const response: any = await axios.post (
+        const response: any = await axios.get (
             url+"/posts",
-            newPost
+            {params: newPost}
         ).catch(error => console.log(error.response.data));
 
         const response2: any = await axios.get(
@@ -173,7 +173,7 @@ describe("Happy Routes test", () =>
             }
         }
         const response = await axios.put(
-            url+"/update-post/"+newPost.id,
+            url+"/posts/"+newPost.id,
             body,
             configOptions
         )
@@ -188,14 +188,14 @@ describe("Happy Routes test", () =>
         expect(updatedPost.data.content).toBe(body.content);    
         
         const deletePost =  await axios.delete (
-            url+"/delete-post/"+newPost.id,
+            url+"/posts/"+newPost.id,
             configOptions
         ).catch(error => { console.log(error.response.data); return error});
 
         expect(deletePost.status).toBe(200);
 
         const deleteUser = await axios.delete (
-            url+"/delete-user/"+user.id,
+            url+"/users/"+user.id,
             configOptions
         ).catch(error => { console.log(error.response.data); return error });
 

@@ -9,10 +9,8 @@ import { randomUUID } from "crypto";
 describe("All requests should return a correct error statuscode", async () => 
 {
     const url = "http://localhost:4550";
-
     let accessToken;    
     let invalidAccessToken = tokenForTest();
-
     let configHeaders;
 
     const user = new UserDto ({
@@ -33,12 +31,12 @@ describe("All requests should return a correct error statuscode", async () =>
     test("user has exists", async () => 
     {
         await axios.post(
-            url+"/create-user",
+            url+"/users",
             user
         );
 
         const error: any = await axios.post(
-            url+"/create-user", 
+            url+"/users", 
             user
         )
         .catch(error => error);
@@ -63,9 +61,9 @@ describe("All requests should return a correct error statuscode", async () =>
     
     test("user not exists", async () => 
     {
-        const error: any = await axios.post(
+        const error: any = await axios.get(
             url+"/users", 
-            { email: generateString(20)+"@live.com" }
+            { params: { email: generateString(20)+"@live.com" }}
         )
         .catch(error => error);
 
@@ -76,7 +74,7 @@ describe("All requests should return a correct error statuscode", async () =>
     test("Post owner not exists", async () => 
     {        
         const error: any = await axios.post(
-            url+"/create-post",
+            url+"/posts",
             newPost,
             configHeaders
         )
@@ -93,9 +91,9 @@ describe("All requests should return a correct error statuscode", async () =>
             title: "fdgfg"
         });
 
-        const error: any = await axios.post(
-            url+"/posts",
-            postForTest            
+        const error: any = await axios.get(
+            url+"/posts",              
+            { params: postForTest }
         ).catch(error => error);
 
         expect(error.response.status).toBe(404);        
@@ -110,7 +108,7 @@ describe("All requests should return a correct error statuscode", async () =>
         }
 
         const error: any = await axios.put(
-            url+"/update-user/11000",
+            url+"/]/11000",
             testPost,
             configHeaders
         ).catch(error => error);
@@ -130,7 +128,7 @@ describe("All requests should return a correct error statuscode", async () =>
         expect(error.response.status).toBe(400);                        
 
         await axios.delete(
-            url+"/delete-user/"+user.id,
+            url+"/users/"+user.id,
             configHeaders
         ).catch(error => console.log(error.response));
     });
@@ -138,7 +136,7 @@ describe("All requests should return a correct error statuscode", async () =>
     test ("Jwt not authorized", async () => 
     {
         const error = await axios.delete(
-            url+"/delete-user/"+randomUUID,
+            url+"/users/"+randomUUID,
             {
                 headers : {
                     Authorization: "Bearer "+invalidAccessToken

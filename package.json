@@ -8,6 +8,7 @@
     "node": "18"
   },
   "scripts": {
+    "vercel-build": "npm ci && tsc --project tsconfig.json && tsc-alias -p tsconfig.json && npx prisma migrate deploy",
     "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "migrate": "npx prisma migrate deploy",
     "start": "node ./dist/server/src/main.js",

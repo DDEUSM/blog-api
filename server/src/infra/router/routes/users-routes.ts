@@ -22,14 +22,17 @@ export default class UserRoutes
 
     initRoutes (): void
     {
-        this.httpServer.onValidator("post", "/users", {
-            firstName: { type: "string" },
-            lastName: { type: "string" },
-            email: { type: "email" },            
-            id: { type: "uuidv4" }
-        }, async (body: DynamicUserDto, params: any, cookies: any) => {            
+        this.httpServer.onValidator("get", "/users", {
+            dataSchema: {
+                firstName: { type: "string" },
+                lastName: { type: "string" },
+                email: { type: "email" },            
+                id: { type: "uuidv4" }
+            },
+            from: "query"
+        }, async (body: DynamicUserDto, params: any, query: any, cookies: any) => {            
             const getUsers = new GetUsers ( this.usersRepository );
-            const users = await getUsers.execute(body);
+            const users = await getUsers.execute(query);
             return {
                 statusCode: 200,
                 data: users
@@ -37,7 +40,7 @@ export default class UserRoutes
         });
 
 
-        this.httpServer.on("get", "/users/id/:id", async (body: any, params: any, cookies: any) => {
+        this.httpServer.on("get", "/users/id/:id", async (body: any, params: any, query: any, cookies: any) => {
             const getUserById = new GetUserById ( this.usersRepository );             
             const user = await getUserById.execute(params.id);
             return {
@@ -47,7 +50,7 @@ export default class UserRoutes
         });
 
 
-        this.httpServer.on("get", "/users/email/:email", async (body: any, params: any, cookies: any) => {
+        this.httpServer.on("get", "/users/email/:email", async (body: any, params: any, query: any, cookies: any) => {
             const getUserByEmail = new GetUserByEmail ( this.usersRepository );
             const user = await getUserByEmail.execute(params.email);
             return {
@@ -57,14 +60,17 @@ export default class UserRoutes
         });
 
 
-        this.httpServer.onValidator("post", "/create-user", {
-            firstName: { type: "string", required: true },
-            lastName: { type: "string", required: true },
-            email: { type: "email", required: true },
-            password: { type: "string", required: true },
-            refreshToken: { type: "string" },
-            id: { type: "uuidv4" }
-        }, async (body: any, params: any, cookies: any) => {            
+        this.httpServer.onValidator("post", "/users", {
+            dataSchema: {
+                firstName: { type: "string", required: true },
+                lastName: { type: "string", required: true },
+                email: { type: "email", required: true },
+                password: { type: "string", required: true },
+                refreshToken: { type: "string" },
+                id: { type: "uuidv4" }
+            },
+            from: "body"
+        }, async (body: any, params: any, query: any, cookies: any) => {            
             const createUser = new CreateUser ( this.usersRepository );
             await createUser.execute(body);
             return {
@@ -74,11 +80,14 @@ export default class UserRoutes
         });
 
 
-        this.httpServer.onValidator("post", "/update-user/:id", {
-            firstName: { type: "string" },
-            lastName: { type: "string" },
-            email: { type: "email" },                       
-        }, async (body: any, params: any, cookies: any) => {   
+        this.httpServer.onValidator("put", "/users/:id", {
+            dataSchema: {
+                firstName: { type: "string" },
+                lastName: { type: "string" },
+                email: { type: "email" },                       
+            },
+            from: "body"
+        }, async (body: any, params: any, query: any, cookies: any) => {   
             const updateUser = new UpdateUser(this.usersRepository);
             await updateUser.execute(params.id, body);
             return {
@@ -88,7 +97,7 @@ export default class UserRoutes
         }, verifyAuthorization.middleware("userRoutes"))
 
 
-        this.httpServer.on("delete", "/delete-user/:id", async (body: any, params: any, cookies: any) => {            
+        this.httpServer.on("delete", "/users/:id", async (body: any, params: any, query: any, cookies: any) => {            
             const deleteUser = new DeleteUser(this.usersRepository);
             await deleteUser.execute(params.id);
             return {

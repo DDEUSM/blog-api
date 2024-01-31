@@ -1,21 +1,26 @@
 
 import { ApiError } from "../../../domain/errors/api-error";
 
-
 type SchemaTypes = "string" | "email" | "number" | "uuidv4" | "date";
 
-export type TInputSchema = {
+export type ValidatorDataType = {
     [key: string]: { type: SchemaTypes, required?: boolean }
 }
 
+export type ValidatorSchemaType = {
+    dataSchema: ValidatorDataType,
+    from: "body" | "params" | "query"
+}
 
 export class Validator
 {
-    static validateInputs (req: any, res: any, next: any, schema: any)
-    {                    
-        const schemaKeys = Object.keys(schema);
+    static validateInputs (req: any, res: any, next: any, schema: ValidatorSchemaType)
+    {   
+        const { dataSchema, from } = schema;
+        const schemaKeys = Object.keys(dataSchema);
+        const data = req[from];        
         let error = false;
-        Object.keys(req.body).map(key => 
+        Object.keys(data).map(key => 
         {
             if (!schemaKeys.includes(key))
             {
@@ -24,14 +29,13 @@ export class Validator
         });        
         const verifyInputs = schemaKeys.reduce((results: any, key: string) => 
         {
-            if (req.body[key])
+            if (data[key])
             {
-                results[key] = this[schema[key].type](req.body[key])? true 
+                results[key] = this[dataSchema[key].type](data[key])? true 
                 : function(){ error = true; return false}();                
                 return results;
             }
-
-            results[key] = !schema[key].required? true 
+            results[key] = !dataSchema[key].required? true 
             : function(){ error = true; return false}();
             return results;
             

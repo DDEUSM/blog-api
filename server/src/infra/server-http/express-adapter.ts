@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response} from "express";
 import { IController, IHTTPServer } from "./server-http-contract";
-import { TInputSchema, Validator } from "../middlewares/middlewares-in-line/validator";
+import { ValidatorSchemaType, Validator } from "../middlewares/middlewares-in-line/validator";
 import cookieParser from "cookie-parser";
 
 export class ExpressAdapter implements IHTTPServer
@@ -29,7 +29,7 @@ export class ExpressAdapter implements IHTTPServer
         });        
     }
 
-    onValidator (httpMethod: string, uri: string, inputSchema: TInputSchema, controller: IController, middleware?: Function): void 
+    onValidator (httpMethod: string, uri: string, inputSchema: ValidatorSchemaType, controller: IController, middleware?: Function): void 
     {                                
         const validatorMiddleware = (req: Request, res: Response, next: NextFunction) => {
             Validator.validateInputs(req, res, next, inputSchema);
@@ -39,7 +39,7 @@ export class ExpressAdapter implements IHTTPServer
         this.server[httpMethod](...params, async(req: Request, res: Response, next: NextFunction) => {
             try
             {
-                const output = await controller(req.body, req.params, req.cookies);
+                const output = await controller(req.body, req.params, req.query, req.cookies);
                 return output.toCookie?
                     res.cookie("jwt", output.toCookie, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
                     .setHeader('Access-Controll-Allow-Origin', '*')
@@ -75,7 +75,5 @@ export class ExpressAdapter implements IHTTPServer
     listen (port: number): void 
     {        
         this.server.listen(port, () => console.log(`Server running at http://localhost:${port}`));
-
     }
-
 }

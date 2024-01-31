@@ -17,10 +17,12 @@ export default class AuthRoutes
     initRoutes (): void
     {
         this.httpServer.onValidator("post","/login", {
-            email: { type: "email", required: true },
-            password: { type: "string", required: true }
-        },
-        async (body: {email: string, password: string}, params: any, cookies: any) => 
+            dataSchema: {
+                email: { type: "email", required: true },
+                password: { type: "string", required: true }
+            },
+            from: "body"
+        }, async (body: {email: string, password: string}, params: any, cookies: any) => 
         {            
             const userLogin = new UserLogin(this.usersRepository);
             const tokens = await userLogin.execute(body);
