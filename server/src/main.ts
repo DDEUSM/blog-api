@@ -32,5 +32,5 @@ router.initAllRoutes();
 httpServer.middleware(ErrorHandler.middleware());
 httpServer.setSwagger("/api-docs", swaggerUi.serve, swaggerUi.setup, swaggerDocs);
 
-httpServer.listen(Number(env.PORT));
+httpServer.listen(env.PORT);
 
